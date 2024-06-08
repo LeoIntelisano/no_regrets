@@ -50,7 +50,7 @@ $(OUTPUT): compile_c assemble_asm
 $(ISO_DIR):
 	mkdir -p $(ISO_DIR)/boot/grub
 	cp $(OUTPUT) $(ISO_DIR)/boot/$(TARGET).bin
-	echo 'menuentry "$(TARGET)" {\n	multiboot /boot/$(TARGET).bin\n}' > $(ISO_DIR)/boot/grub/grub.cfg
+	echo 'menuentry "$(TARGET)" {\n\tmultiboot /boot/$(TARGET).bin\n}' > $(ISO_DIR)/boot/grub/grub.cfg
 
 $(ISO): $(OUTPUT) $(ISO_DIR)
 	grub-mkrescue -o $@ $(ISO_DIR)
