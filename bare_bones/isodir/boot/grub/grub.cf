@@ -1,0 +1,3 @@
+menuentry "MYOS" {
+    multiboot /boot/MYOS.bin
+}
