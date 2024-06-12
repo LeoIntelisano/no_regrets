@@ -14,6 +14,4 @@ Lets hope 000000 corresponds to `_start()`!
 ## C attributes
 Also investigates the compilation and linking process.\
 \ 
-\ 
-\
 Helpful shell scripts found in src
