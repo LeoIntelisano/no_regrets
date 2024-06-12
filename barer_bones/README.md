@@ -16,4 +16,4 @@ Also investigates the compilation and linking process.\
 Helpful shell scripts found in src
 
 ## Setup:
-I am using a cross-compiler but it's pretty straightforward to just change the CC variable in src/build.sh
+I am using a cross-compiler but it's pretty straightforward to just change the CC variable in `src/build.sh`
