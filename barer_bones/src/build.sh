@@ -1,6 +1,14 @@
 BUILD='../build'
-OBJ='boot'
+AOBJ='boot'
+COBJ='kernel'
 TARGET='i386'
+CC='i686-elf-gcc'
+LD='i686-elf-ld'
+MEMORY=0x1000
+NAME='os-image'
 
-nasm -f bin -o $BUILD/$OBJ.bin $OBJ.asm
-qemu-system-$TARGET -drive format=raw,file=$BUILD/$OBJ.bin
+nasm -f bin -o $BUILD/$AOBJ.bin $AOBJ.asm
+$CC -ffreestanding -c $COBJ.c -o $BUILD/$COBJ.o
+$LD -o $BUILD/$COBJ.bin -Ttext $MEMORY $BUILD/$COBJ.o --oformat binary 
+cat $BUILD/$AOBJ.bin $BUILD/$COBJ.bin > $BUILD/$NAME 
+qemu-system-$TARGET -fda $BUILD/$NAME -boot a
