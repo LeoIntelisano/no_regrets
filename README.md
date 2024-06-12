@@ -11,3 +11,4 @@ Build Environment: non existent
 ### References
 Read Modern Computer Architecture and Organization\
 Using osdev wiki https://wiki.osdev.org/ to help
+Writing A Simple OS from Scratch by Nick Blundell
