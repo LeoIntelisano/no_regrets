@@ -11,7 +11,6 @@ Many
 ## OS Structure
 ```
 /
-├── .gitignore          # Git ignore file
 ├── Makefile            # Makefile in the root directory
 ├── build/              # Build artifacts (git-ignored)
 ├── src/                # Source code tree
@@ -23,6 +22,7 @@ Many
 │   ├── lib/            # Libraries, including freestanding libc
 │   └── tools/          # Build tools and utilities
 ├── sys/                # System-specific files
+│   ├── bin/            # Super user binaries
 │   ├── dev/            # Device files
 │   ├── etc/            # System configuration files
 │   ├── proc/           # Process information
