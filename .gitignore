@@ -54,3 +54,5 @@ dkms.conf
 # Bootables
 *.iso
 ./bare_bones/build
+./barer_bones/build
+*.DS_STORE
