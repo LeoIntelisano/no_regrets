@@ -55,5 +55,5 @@ dkms.conf
 *.iso
 ./bare_bones/build
 ./barer_bones/build
-*.DS_STORE
+*.DS_Store
 *.img
