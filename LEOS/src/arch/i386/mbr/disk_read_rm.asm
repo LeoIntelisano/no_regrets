@@ -20,7 +20,7 @@ disk_read_rm:
 	ret
 
 .disk_error:
-	mov bx, DISK_ERROR_MSG
+	mov si, DISK_ERROR_MSG
 	call print_rm
 	jmp $
 

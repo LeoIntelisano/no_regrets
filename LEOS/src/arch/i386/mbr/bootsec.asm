@@ -2,6 +2,8 @@
 [bits 16]
 [org 0x7c00]
 
+KERNEL equ 0x8000
+
 start:
 	mov [DISK_NUM], dl
 	xor ax, ax
@@ -10,31 +12,26 @@ start:
 
 	mov bp, 0x9000 ; set the stack to usable memory 0x7E00 to 0x7FFFF
 	mov sp, bp
-	mov bx, KERNEL_LOADING
-	call print_rm
-	
-	mov bx, PRINT_CHECK
+	mov si, KERNEL_LOADING
 	call print_rm
 
-	mov bx, 0x8000	; load kernel to 0x8000, dl should still have drive number
+.load_kernel:
+	mov bx, KERNEL ; load kernel to 0x8000, dl should still have drive number
 	mov dh, 1
 	mov dl, [DISK_NUM]
 	call disk_read_rm
-	mov bx, 0x8000
+	mov si, DISK_READ_SUCCESS
 	call print_rm
+	
+	
+	jmp $ 
 
-	mov bx, DISK_READ_SUCCESS
-	call print_rm
-
-hang:
-	jmp hang
 ; includes
 %include "print_rm.asm"
 %include "disk_read_rm.asm"
 
 ; globals
 KERNEL_LOADING db "loading kernel...",0
-PRINT_CHECK db "check 1, 2",0
 DISK_READ_SUCCESS db "successful disk read", 0
 DISK_NUM db 0
 
