@@ -12,6 +12,10 @@ print_loop:
 	inc si
 	jmp print_loop
 done:
+	mov al, 0xa ; newline
+	int 0x10
+	mov al, 0xd ; cr
+	int 0x10
 	popa
 	ret
 
