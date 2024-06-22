@@ -1,44 +1,58 @@
+# build environment
 CC := i686-elf-gcc
 AS := nasm
 LD := i686-elf-ld
 ARCH ?= i386
 
+# src tree
 SRC_DIR := src
 INC_DIR := $(SRC_DIR)/include
 ARCH_DIR := $(SRC_DIR)/arch/$(ARCH)
 BUILD_DIR := build
 KERNEL_DIR := $(SRC_DIR)/kernel
+BOOT_DIR := $(ARCH_DIR)/mbr
 
+# where find will look for src files (exclude boot from asm arch specific srcs)
+C_DIRS = $(KERNEL_DIR) $(ARCH_DIR)
+AS_DIRS = $(KERNEL_DIR) $(ARCH_DIR)
 
+# flags
 CFLAGS ?= -I$(INC_DIR) -ffreestanding -Wall -Wextra -O2 -g
 LDFLAGS ?= -T linker.ld -ffreestanding -O2 -nostdlib -lgcc
 ASFLAGS ?= -felf -g
+BSFLAGS ?= -f bin -I $(BOOT_DIR)
 
-C_SRCS = $(shell find $(KERNEL_DIR) $(ARCH_DIR) -type f -name '*.c') 
-ASM_SRCS = $(shell find $(KERNEL_DIR) -type f -name '*.asm')
-ASM_BOOT = $(ARCH_DIR)/mbr/bootsec.asm
+# locate all c source files in kernel dir and arch dir
+C_SRCS = $(shell find $(C_DIRS) -type f -name '*.c') 
+ASM_SRCS = $(shell find $(AS_DIRS) -type d -name 'mbr' -prune -type f -name '*.asm')
+ASM_BOOT = $(BOOT_DIR)/bootsec.asm
 
+# pattern swap to create .o dependencies
 C_OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(C_SRCS))
 ASM_OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
 OBJS = $(C_OBJS) $(ASM_OBJS)
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	mkdir -p $@
 
-$(BUILD_DIR)/%.o: $(KERNEL_SRCS)/%.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(KERNEL_DIR)/%.c 
+	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.o: $(ARCH_SRCS)/%.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(ARCH_DIR)/%.c 
+	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/%.o: $(ASM_SRCS)/%.asm | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(KERNEL_DIR)/%.asm 
+	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
-$(BUILD_DIR)/kern.bin: $(BUILD_DIR)/%.o | $(BUILD_DIR)
+$(BUILD_DIR)/kern.bin: $(OBJS)
 	$(LD) $(LDFLAGS) $< -o $@
 
 $(BUILD_DIR)/bootsec.bin: $(ASM_BOOT) | $(BUILD_DIR)
-	$(AS) -f bin $< -o $@
+	$(AS) $(BSFLAGS) $< -o $@
+	@echo $(OBJS)
 
 $(BUILD_DIR)/leos.img: $(BUILD_DIR)/bootsec.bin $(BUILD_DIR)/kern.bin
 	dd if=/dev/zero of=$@ bs=512 count=2880
