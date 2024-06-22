@@ -13,11 +13,11 @@ KERNEL_DIR := $(SRC_DIR)/kernel
 BOOT_DIR := $(ARCH_DIR)/mbr
 
 # where find will look for src files (exclude boot from asm arch specific srcs)
-C_DIRS = $(KERNEL_DIR) $(ARCH_DIR)
-AS_DIRS = $(KERNEL_DIR) $(ARCH_DIR)
+C_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
+AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
 
 # flags
-CFLAGS ?= -I$(INC_DIR) -ffreestanding -Wall -Wextra -O2 -g
+CFLAGS ?= -I$(INC_DIR)/ -ffreestanding -Wall -Wextra -O2 -g
 LDFLAGS ?= -T linker.ld -ffreestanding -O2 -nostdlib -lgcc
 ASFLAGS ?= -felf -g
 BSFLAGS ?= -f bin -I $(BOOT_DIR)
@@ -35,11 +35,11 @@ OBJS = $(C_OBJS) $(ASM_OBJS)
 $(BUILD_DIR):
 	mkdir -p $@
 
-$(BUILD_DIR)/%.o: $(KERNEL_DIR)/%.c 
+$(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.c 
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.o: $(ARCH_DIR)/%.c 
+$(BUILD_DIR)/arch/$(ARCH)/%.o: $(ARCH_DIR)/%.c 
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -52,7 +52,7 @@ $(BUILD_DIR)/kern.bin: $(OBJS)
 
 $(BUILD_DIR)/bootsec.bin: $(ASM_BOOT) | $(BUILD_DIR)
 	$(AS) $(BSFLAGS) $< -o $@
-	@echo $(OBJS)
+	@echo $(C_SRCS)
 
 $(BUILD_DIR)/leos.img: $(BUILD_DIR)/bootsec.bin $(BUILD_DIR)/kern.bin
 	dd if=/dev/zero of=$@ bs=512 count=2880
@@ -62,7 +62,7 @@ $(BUILD_DIR)/leos.img: $(BUILD_DIR)/bootsec.bin $(BUILD_DIR)/kern.bin
 
 .PHONY: clean all qemu
 clean:
-	rm -f $(BUILD_DIR)/**
+	rm -rf $(BUILD_DIR)
 
 qemu: $(BUILD_DIR)/leos.img
 	qemu-system-$(ARCH) -fda $<

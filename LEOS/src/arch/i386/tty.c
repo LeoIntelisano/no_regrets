@@ -1,6 +1,6 @@
 // src/arch/i386/tty.c -- tty implementation for x86
 #include <stdint.h>
-#include "tty.h"
+#include "tty/tty.h"
 
 typedef struct {
 	uint8_t fg_clr	: 4;
