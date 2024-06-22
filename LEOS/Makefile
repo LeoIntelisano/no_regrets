@@ -57,7 +57,7 @@ $(BUILD_DIR)/bootsec.bin: $(ASM_BOOT) | $(BUILD_DIR)
 $(BUILD_DIR)/leos.img: $(BUILD_DIR)/bootsec.bin $(BUILD_DIR)/kern.bin
 	dd if=/dev/zero of=$@ bs=512 count=2880
 	dd if=$(BUILD_DIR)/bootsec.bin of=$@ bs=512 count=1 conv=notrunc
-	dd if=$(BUILD_DIR)/kern.bin of=$@ bs=1 count=1 seek=512 conv=notrunc
+	dd if=$(BUILD_DIR)/kern.bin of=$@ bs=512 count=15 seek=512 conv=notrunc
 
 
 .PHONY: clean all qemu
