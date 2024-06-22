@@ -1,7 +1,7 @@
 # build environment
 CC := i686-elf-gcc
 AS := nasm
-LD := i686-elf-ld
+LD := i686-elf-gcc
 ARCH ?= i386
 
 # src tree
@@ -17,14 +17,14 @@ C_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
 AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
 
 # flags
-CFLAGS ?= -I$(INC_DIR)/ -ffreestanding -Wall -Wextra -O2 -g
-LDFLAGS ?= -T linker.ld -ffreestanding -O2 -nostdlib -lgcc
+CFLAGS ?= -I$(INC_DIR)/ -ffreestanding -Wall -Wextra -O2 -g -nostdlib
+LDFLAGS ?= -T $(ARCH_DIR)/linker.ld -ffreestanding -O2 -nostdlib -lgcc
 ASFLAGS ?= -felf -g
 BSFLAGS ?= -f bin -I $(BOOT_DIR)
 
 # locate all c source files in kernel dir and arch dir
 C_SRCS = $(shell find $(C_DIRS) -type f -name '*.c') 
-ASM_SRCS = $(shell find $(AS_DIRS) -type d -name 'mbr' -prune -type f -name '*.asm')
+ASM_SRCS = $(shell find $(AS_DIRS) -path $(BOOT_DIR) -prune -o -type f -name '*.asm' -print)
 ASM_BOOT = $(BOOT_DIR)/bootsec.asm
 
 # pattern swap to create .o dependencies
@@ -43,21 +43,21 @@ $(BUILD_DIR)/arch/$(ARCH)/%.o: $(ARCH_DIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.o: $(KERNEL_DIR)/%.asm 
+$(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.asm 
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
 $(BUILD_DIR)/kern.bin: $(OBJS)
-	$(LD) $(LDFLAGS) $< -o $@
+	$(LD) $(LDFLAGS) $^ -o $@
 
 $(BUILD_DIR)/bootsec.bin: $(ASM_BOOT) | $(BUILD_DIR)
 	$(AS) $(BSFLAGS) $< -o $@
-	@echo $(C_SRCS)
+	@echo "ASM OBJECTS: $(ASM_OBJS)"
 
 $(BUILD_DIR)/leos.img: $(BUILD_DIR)/bootsec.bin $(BUILD_DIR)/kern.bin
 	dd if=/dev/zero of=$@ bs=512 count=2880
 	dd if=$(BUILD_DIR)/bootsec.bin of=$@ bs=512 count=1 conv=notrunc
-	dd if=$(BUILD_DIR)/kern.bin =$@ bs=1 count=1 seek=512 conv=notrunc
+	dd if=$(BUILD_DIR)/kern.bin of=$@ bs=1 count=1 seek=512 conv=notrunc
 
 
 .PHONY: clean all qemu
