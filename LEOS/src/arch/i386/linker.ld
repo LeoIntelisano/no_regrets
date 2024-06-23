@@ -2,9 +2,9 @@ ENTRY(start)
 
 SECTIONS
 {
-    . = 0x8000;  /* Start at 1MB */
+    . = 0x8000;  /* Start at 0x8000 */
 
-    .text : AT(ADDR(.text) - 0x100000)
+    .text :
     {
         *(.text.entry)       /* Entry point code */
         *(.text)              /* Other code */
@@ -15,7 +15,7 @@ SECTIONS
         *(.data)              /* Initialized data */
     }
 
-    .bss :
+    .bss : ALIGN(4K)
     {
         *(.bss)               /* Uninitialized data */
     }
