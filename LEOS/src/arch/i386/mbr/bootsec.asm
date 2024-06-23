@@ -42,6 +42,7 @@ protected_mode:
 	; pm mode check
 	mov ebx, PM_STRING
 	call print_string
+	call KERNEL
 	jmp $ 
 
 ; includes
