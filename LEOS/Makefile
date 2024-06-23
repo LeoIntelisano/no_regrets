@@ -60,7 +60,7 @@ $(BUILD_DIR)/leos.img: $(BUILD_DIR)/bootsec.bin $(BUILD_DIR)/kern.bin
 	dd if=$(BUILD_DIR)/kern.bin of=$@ bs=512 count=15 seek=512 conv=notrunc
 
 
-.PHONY: clean all qemu
+.PHONY: clean all qemu debug
 clean:
 	rm -rf $(BUILD_DIR)
 
@@ -69,3 +69,6 @@ qemu: $(BUILD_DIR)/leos.img
 
 all: $(BUILD_DIR)/leos.img
 
+debug: $(BUILD_DIR)/leos.img
+	qemu-system-$(ARCH) -fda $< -s -S
+	@echo "Run gdb kern.bin ... target remote :1234"
