@@ -10,7 +10,7 @@ stack_bottom:
 resb 16384 ; 16 kb used from bare bones 
 stack_top:
 
-section .text
+section .text.entry
 
 global start
 start:
