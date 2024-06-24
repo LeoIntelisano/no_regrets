@@ -2,6 +2,7 @@
 CC := i686-elf-gcc
 AS := nasm
 LD := i686-elf-gcc
+OBJCPY := i686-elf-objcopy
 ARCH ?= i386
 
 # src tree
@@ -17,10 +18,11 @@ C_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
 AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
 
 # flags
-CFLAGS ?= -I$(INC_DIR)/ -ffreestanding -Wall -Wextra -O2 -g -nostdlib
-LDFLAGS ?= -T $(ARCH_DIR)/linker.ld -ffreestanding -O2 -nostdlib -lgcc
-ASFLAGS ?= -felf -g
+CFLAGS ?= -I $(INC_DIR)/ -ffreestanding -Wall -Wextra -nostdlib
+LDFLAGS ?= -T $(ARCH_DIR)/linker.ld -ffreestanding -nostdlib -lgcc
+ASFLAGS ?= -felf
 BSFLAGS ?= -f bin -I $(BOOT_DIR)
+OBJCPYFLAGS ?= -O binary
 
 # locate all c source files in kernel dir and arch dir
 C_SRCS = $(shell find $(C_DIRS) -type f -name '*.c') 
@@ -47,8 +49,11 @@ $(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.asm
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
-$(BUILD_DIR)/kern.bin: $(OBJS)
+$(BUILD_DIR)/kern.elf: $(OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@
+
+$(BUILD_DIR)/kern.bin : $(BUILD_DIR)/kern.elf
+	$(OBJCPY) $(OBJCPYFLAGS) $< $@
 
 $(BUILD_DIR)/bootsec.bin: $(ASM_BOOT) | $(BUILD_DIR)
 	$(AS) $(BSFLAGS) $< -o $@
@@ -57,7 +62,7 @@ $(BUILD_DIR)/bootsec.bin: $(ASM_BOOT) | $(BUILD_DIR)
 $(BUILD_DIR)/leos.img: $(BUILD_DIR)/bootsec.bin $(BUILD_DIR)/kern.bin
 	dd if=/dev/zero of=$@ bs=512 count=2880
 	dd if=$(BUILD_DIR)/bootsec.bin of=$@ bs=512 count=1 conv=notrunc
-	dd if=$(BUILD_DIR)/kern.bin of=$@ bs=512 count=15 seek=512 conv=notrunc
+	dd if=$(BUILD_DIR)/kern.bin of=$@ bs=512 seek=1 conv=notrunc
 
 
 .PHONY: clean all qemu debug
