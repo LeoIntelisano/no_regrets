@@ -1,19 +1,55 @@
 // src/arch/i386/tty.c -- tty implementation for x86
 #include <stdint.h>
+#include <stddef.h>
 #include "tty/tty.h"
+
+#define index(x,y)((x+VGA_WIDTH*y)*2)
 
 typedef struct {
 	uint8_t fg_clr	: 4;
 	uint8_t bg_clr	: 3;
 	uint8_t blink		: 1;
-} VGA_PARAMS;
+} vga_t;
 
-VGA_PARAMS vga = {0xb, 0x0, 0x0};
+const size_t VGA_WIDTH = 80;
+const size_t VGA_HEIGHT = 25;
+size_t tty_row = 0;
+size_t tty_col = 0;
+
+
+vga_t vga = {0xb, 0x0, 0x0};
+volatile uint8_t* vga_mem = (volatile uint8_t*)0xb8000;
+
+int tty_putc(int ch) {	
+	if (tty_col >= VGA_WIDTH) {
+		tty_col = 0;
+		tty_row++;
+	}
+	if (tty_row >= VGA_HEIGHT) {
+		tty_row = 0;	
+	}
+
+	*(uint16_t*)&vga_mem[index(tty_col++, tty_row)] =  (uint8_t)ch | (*(uint8_t*)&vga) << 8;
+	return ch;
+}
 
 void tty_print(const char* str) {
-	volatile uint8_t* mem = (volatile uint8_t*)0xb8000;
 	while (*str) {
-		*mem++ = *str++;
-		*mem++ = *(uint8_t*)&vga;
+		tty_putc(*str++);
 	}
+	tty_row++;
+	tty_col = 0;
 }		
+
+static void tty_top() {
+	vga_mem = (volatile uint8_t*)0xb8000;
+}
+
+void tty_clear() {
+	tty_top();
+	for (size_t i = 0; i < 2*(VGA_WIDTH-1)*(VGA_HEIGHT-1); i++){
+		vga_mem[i++] = ' ';
+		vga_mem[i] = *(uint8_t*)&vga;
+	}
+}
+
