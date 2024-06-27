@@ -19,7 +19,7 @@ start:
 
 .load_kernel:
 	mov bx, KERNEL ; load kernel to 0x8000, dl should still have drive number
-	mov dh, 1
+	mov dh, 2     ; if you have an issue with the code being funky CHECK THIS!
 	mov dl, [DISK_NUM]
 	call disk_read_rm
 	mov si, DISK_READ_SUCCESS
