@@ -16,4 +16,4 @@ r/osdev\
 ia32 manual v1-3\
 os design and implementation (minix book)\
 os internals and design\
-linux kernel 2.4 internals\
+linux kernel 2.4 internals
