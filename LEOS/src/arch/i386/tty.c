@@ -34,7 +34,7 @@ int tty_putc(int ch) {
 }
 
 void tty_test(){
-	for (size_t i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
+	for (size_t i = 0; i < VGA_WIDTH * VGA_HEIGHT * 2; i+=2) {
         tty_putc('A' + (i / 2) % 26);  // Characters A-Z in a loop
     }
 }
