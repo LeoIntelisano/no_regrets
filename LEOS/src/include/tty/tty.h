@@ -9,4 +9,7 @@ void tty_print(const char*);
 /* fills tty buffer with 0s... clears screen */
 void tty_clear();
 
+/* test function to print A-Z to fill entire buffer */
+void tty_test();
+
 #endif	// TTY_H

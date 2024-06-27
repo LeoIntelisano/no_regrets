@@ -4,15 +4,15 @@
 #include "tty/tty.h"
 
 #define index(x,y)((x+VGA_WIDTH*y)*2)
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
 
 typedef struct {
-	uint8_t fg_clr	: 4;
-	uint8_t bg_clr	: 3;
-	uint8_t blink		: 1;
+	uint8_t fg_clr  : 4;
+	uint8_t bg_clr  : 3;
+	uint8_t blink   : 1;
 } vga_t;
 
-const size_t VGA_WIDTH = 80;
-const size_t VGA_HEIGHT = 25;
 size_t tty_row = 0;
 size_t tty_col = 0;
 
@@ -29,8 +29,14 @@ int tty_putc(int ch) {
 		tty_row = 0;	
 	}
 
-	*(uint16_t*)&vga_mem[index(tty_col++, tty_row)] =  (uint8_t)ch | (*(uint8_t*)&vga) << 8;
+	*(volatile uint16_t*)&vga_mem[index(tty_col++, tty_row)] =  (uint8_t)ch | (*(uint8_t*)&vga) << 8;
 	return ch;
+}
+
+void tty_test(){
+	for (size_t i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
+        tty_putc('A' + (i / 2) % 26);  // Characters A-Z in a loop
+    }
 }
 
 void tty_print(const char* str) {
@@ -47,7 +53,7 @@ static void tty_top() {
 
 void tty_clear() {
 	tty_top();
-	for (size_t i = 0; i < 2*(VGA_WIDTH-1)*(VGA_HEIGHT-1); i++){
+	for (size_t i = 0; i < 2*VGA_WIDTH*VGA_HEIGHT; i++){
 		vga_mem[i++] = ' ';
 		vga_mem[i] = *(uint8_t*)&vga;
 	}
