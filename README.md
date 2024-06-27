@@ -11,4 +11,9 @@ Build Environment: non existent
 ### References
 Read Modern Computer Architecture and Organization\
 Using osdev wiki https://wiki.osdev.org/ to help\
-Writing A Simple OS from Scratch by Nick Blundell
+Writing A Simple OS from Scratch by Nick Blundell\
+r/osdev\
+ia32 manual v1-3\
+os design and implementation (minix book)\
+os internals and design\
+linux kernel 2.4 internals\
