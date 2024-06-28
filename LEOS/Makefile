@@ -49,6 +49,10 @@ $(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.asm
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
+$(BUILD_DIR)/arch/$(ARCH)/%.o: $(ARCH_DIR)/%.asm
+	mkdir -p $(@D)
+	$(AS) $(ASFLAGS) $< -o $@
+
 $(BUILD_DIR)/kern.elf: $(OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@
 
