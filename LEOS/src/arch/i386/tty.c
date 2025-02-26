@@ -2,10 +2,12 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "tty/tty.h"
+#include "io/io.h"
 
 #define index(x,y)((x+VGA_WIDTH*y)*2)
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
+
 
 typedef struct {
 	uint8_t fg_clr  : 4;
@@ -30,7 +32,7 @@ static void tty_clear_r(size_t r){
 static void tty_putc_at(int ch, size_t x, size_t y){
 	*(volatile uint16_t*)&vga_mem[index(x, y)] =  (uint8_t)ch | (*(uint8_t*)&vga) << 8;
 }
-// TODO: fix to copy the attribute bytes as well
+
 static void tty_scroll(){
 	for (size_t r = 1; r < VGA_HEIGHT; r++){
 		for (size_t c = 0; c < VGA_WIDTH; c++) {
@@ -84,3 +86,6 @@ void tty_clear() {
 	}
 }
 
+void tty_update_cursor(size_t x, size_t y) {
+
+}
