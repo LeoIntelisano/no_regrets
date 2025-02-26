@@ -8,7 +8,7 @@ disk_read_rm:
 	mov al, dh ; read DH sectors
 	mov ch, 0x0 ; cylinder 0
 	mov dh, 0x0 ; head 0
-	mov cl, 0x02 ; start from second sector (after boot sec)int 0x13
+	mov cl, 0x02 ; start from second sector (after boot sec)
 
 	int 0x13
 

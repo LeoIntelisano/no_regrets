@@ -2,7 +2,10 @@
 [bits 16]
 [org 0x7c00]
 
-KERNEL equ 0x8000
+KERNEL_SEG equ 0xFFFF
+KERNEL_REG equ 0x0010	; Note: If the A20 line is not enabled this will wrap to 0
+STACK_START equ 0x9000
+ENTRY equ 0x100000
 
 start:
 	cli
@@ -12,13 +15,15 @@ start:
 	mov es, ax
 	mov ss, ax
 
-	mov bp, 0x9000 ; set the stack to usable memory 0x7E00 to 0x7FFFF
+	mov bp, STACK_START ; set the stack to usable memory 0x7E00 to 0x7FFFF
 	mov sp, bp
 	mov si, KERNEL_LOADING
 	call print_rm
 
 .load_kernel:
-	mov bx, KERNEL ; load kernel to 0x8000, dl should still have drive number
+	mov bx, KERNEL_SEG
+	mov es, bx
+	mov bx, KERNEL_REG ; Load Kernel location
 	mov dh, 0x7     ; if you have an issue with the code being funky CHECK THIS!
 	mov dl, [DISK_NUM]
 	call disk_read_rm
@@ -42,7 +47,7 @@ protected_mode:
 	; pm mode check
 	mov ebx, PM_STRING
 	call print_string
-	call KERNEL
+	jmp 0x8:0x100000
 	jmp $ 
 
 ; includes
