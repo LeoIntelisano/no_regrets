@@ -3,5 +3,5 @@
 
 void _cstart() {
 	tty_clear();	
-	tty_test();
+	tty_print("Welcome to LEOS");
 }

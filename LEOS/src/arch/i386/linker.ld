@@ -2,7 +2,7 @@ ENTRY(start)
 
 SECTIONS
 {
-    . = 0x8000;  /* Start at 0x8000 */
+    . = 0x100000;  /* Start at 1MB High Memory */
 
     .text :
     {
