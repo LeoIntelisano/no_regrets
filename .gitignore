@@ -55,6 +55,7 @@ dkms.conf
 *.iso
 bare_bones/build
 barer_bones/build
+.vscode
 LEOS/build
 *.DS_Store
 *.img
