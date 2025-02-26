@@ -49,7 +49,7 @@ int tty_putc(int ch) {
 	if (tty_row >= VGA_HEIGHT) {
 		tty_scroll();
 	}
-	// format checks
+	// format checks #TODO Add other special character checks 
 	if (ch == '\n'){
 		tty_row++;
 		tty_col = 0;

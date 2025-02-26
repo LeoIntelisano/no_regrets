@@ -3,6 +3,7 @@
 [org 0x7c00]
 
 KERNEL equ 0x8000
+STACK_START equ 0x9000	; Note, if kernel image is greater than 0x1000 bytes6 will overwrite stack
 
 start:
 	cli
@@ -12,7 +13,7 @@ start:
 	mov es, ax
 	mov ss, ax
 
-	mov bp, 0x9000 ; set the stack to usable memory 0x7E00 to 0x7FFFF
+	mov bp, STACK_START ; set the stack to usable memory 0x7E00 to 0x7FFFF
 	mov sp, bp
 	mov si, KERNEL_LOADING
 	call print_rm
