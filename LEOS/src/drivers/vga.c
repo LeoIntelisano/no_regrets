@@ -30,7 +30,7 @@ void vga_crt_write(uint8_t index, uint8_t src) {
 }
 
 
-int vga_update_cursor(uint16_t index) {
+int vga_set_cursor(uint16_t index) {
     uint16_t old_curs_pos = vga_crt_read(VGA_CURS_HIGHR) << 8 | vga_crt_read(VGA_CURS_LOWR);
     if (old_curs_pos == index)
         return 0;

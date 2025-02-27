@@ -24,8 +24,8 @@ size_t tty_col = 0;
 vga_t vga = {0x5, 0x0, 0x0};
 volatile uint8_t* vga_mem = (volatile uint8_t*)0xb8000;
 
-static void tty_update_cursor(size_t x, size_t y) {
-	vga_update_cursor(index(x,y)/2);
+static void tty_set_cursor(size_t x, size_t y) {
+	vga_set_cursor(index(x,y)/2);
 }
 
 static void tty_clear_r(size_t r){
@@ -93,7 +93,7 @@ void tty_print(const char* str) {
 	while (*str) {
 		tty_putc(*str++);
 	}
-	tty_update_cursor(tty_col % VGA_WIDTH, tty_row % VGA_HEIGHT);
+	tty_set_cursor(tty_col % VGA_WIDTH, tty_row % VGA_HEIGHT);
 }		
 
 static void tty_top() {
