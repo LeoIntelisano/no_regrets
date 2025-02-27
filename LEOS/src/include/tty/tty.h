@@ -10,6 +10,12 @@ void tty_print(const char*);
 void tty_clear();
 
 /* test function to print A-Z to fill entire buffer */
-void tty_test();
 
+void tty_test();
+void tty_test_row();
+void tty_test_1_left();
+
+
+// Sets attribute bits: [7] blink, [6:4] bg color, [3:0] fg color
+void tty_set_attr(uint8_t attr);
 #endif	// TTY_H

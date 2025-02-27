@@ -13,6 +13,6 @@ void outw(uint16_t loc, uint16_t src);
 uint8_t inb(uint16_t loc);
 uint16_t inw(uint16_t loc);
 
-uint8_t _test_ams(); 
+uint8_t _test_asm(); 
 
 #endif // IO_H

@@ -11,10 +11,11 @@ INC_DIR := $(SRC_DIR)/include
 ARCH_DIR := $(SRC_DIR)/arch/$(ARCH)
 BUILD_DIR := build
 KERNEL_DIR := $(SRC_DIR)/kernel
+DRIVERS_DIR := $(SRC_DIR)/drivers
 BOOT_DIR := $(ARCH_DIR)/mbr
 
 # where find will look for src files (exclude boot from asm arch specific srcs)
-C_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
+C_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(DRIVERS_DIR)
 AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
 
 # flags
@@ -42,6 +43,10 @@ $(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/arch/$(ARCH)/%.o: $(ARCH_DIR)/%.c 
+	mkdir -p $(@D)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/drivers/%.o: $(DRIVERS_DIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 

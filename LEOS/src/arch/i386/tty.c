@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "tty/tty.h"
-#include "io/io.h"
+#include "drivers/vga.h"
 
 #define index(x,y)((x+VGA_WIDTH*y)*2)
 #define VGA_WIDTH 80
@@ -15,12 +15,18 @@ typedef struct {
 	uint8_t blink   : 1;
 } vga_t;
 
+// consider using static for these globals
+
 size_t tty_row = 0;
 size_t tty_col = 0;
 
 
-vga_t vga = {0xb, 0x0, 0x0};
+vga_t vga = {0x5, 0x0, 0x0};
 volatile uint8_t* vga_mem = (volatile uint8_t*)0xb8000;
+
+static void tty_update_cursor(size_t x, size_t y) {
+	vga_update_cursor(index(x,y)/2);
+}
 
 static void tty_clear_r(size_t r){
 	for (size_t i = 0; i < VGA_WIDTH; i++) {
@@ -43,21 +49,24 @@ static void tty_scroll(){
 	tty_row = VGA_HEIGHT-1;
 	tty_col = 0;
 }
-int tty_putc(int ch) {	
-	if (tty_col >= VGA_WIDTH) {
-		tty_col = 0;
-		tty_row++;
-	}
-	if (tty_row >= VGA_HEIGHT) {
-		tty_scroll();
-	}
+static int tty_putc(int ch) {	
 	// format checks #TODO Add other special character checks 
 	if (ch == '\n'){
 		tty_row++;
 		tty_col = 0;
 		return '\n';
 	}
+	
 	tty_putc_at(ch, tty_col++, tty_row);
+	
+	if (tty_col >= VGA_WIDTH) {
+		tty_col = 0;
+		tty_row++;
+	}
+
+	if (tty_row >= VGA_HEIGHT) {
+		tty_scroll();
+	}
 	return ch;
 }
 
@@ -65,14 +74,26 @@ void tty_test(){
 	for (size_t i = 0; i < VGA_WIDTH * VGA_HEIGHT * 2; i+=2) {
         tty_putc('A' + (i / 2) % 26);  // Characters A-Z in a loop
     }
+	tty_print(""); // update cursor
 }
-
+void tty_test_1_left(){
+	for (size_t i = 0; i < VGA_WIDTH * VGA_HEIGHT * 2 - 2; i+=2) {
+        tty_putc('A' + (i / 2) % 26);  // Characters A-Z in a loop
+    }
+	tty_print(""); // update cursor
+}
+void tty_test_row() {
+	for (size_t i = 0; i < VGA_WIDTH*2; i+=2) {
+		tty_putc('A' + (i / 2) % 26);
+	}
+//	tty_putc('Z');
+	tty_print(""); // update cursor
+}
 void tty_print(const char* str) {
 	while (*str) {
 		tty_putc(*str++);
 	}
-	tty_row++;
-	tty_col = 0;
+	tty_update_cursor(tty_col % VGA_WIDTH, tty_row % VGA_HEIGHT);
 }		
 
 static void tty_top() {
@@ -86,6 +107,7 @@ void tty_clear() {
 	}
 }
 
-void tty_update_cursor(size_t x, size_t y) {
-
+// TODO Cursor still maintains old color until new clear because attribute isn't written to entire line
+void tty_set_attr(uint8_t attr) {
+	*(uint8_t*)&vga = attr;
 }

@@ -21,7 +21,7 @@ uint16_t inw(uint16_t loc) {
     return r;
 }
 
-uint8_t _test_ams() {
+uint8_t _test_asm() {
     uint8_t r = 1;
     uint8_t inc = 3;
     asm("addb %1, %0": "+a"(r): "g"(inc));
