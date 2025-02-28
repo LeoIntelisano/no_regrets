@@ -4,8 +4,10 @@
 
 KERNEL_SEG equ 0xFFFF
 KERNEL_REG equ 0x0010	; Note: If the A20 line is not enabled this will wrap to 0
-STACK_START equ 0x9000
+STACK_SEG equ 0x7000 ; stack is actually at phys addr 0x70000 - 0x100.. Avoid 0x000 sp weirdness
+STACK_REG equ 0x100
 ENTRY equ 0x100000
+MEM_MAP_ADDR equ 0x7E00
 
 start:
 	cli
@@ -15,10 +17,30 @@ start:
 	mov es, ax
 	mov ss, ax
 
-	mov bp, STACK_START ; set the stack to usable memory 0x7E00 to 0x7FFFF
+	mov ax, STACK_SEG
+	mov ss, ax
+	mov bp, STACK_REG
 	mov sp, bp
 	mov si, KERNEL_LOADING
 	call print_rm
+
+.map_memory:
+	xor ebx, ebx
+	mov es, bx
+	mov di, MEM_MAP_ADDR
+
+.mem_loop:
+	mov eax, 0xE820
+	mov ecx, 20
+	mov edx, 0x534D4150 ; 'SMAP' magic number
+	clc
+	int 0x15
+	jc .mem_error
+	add di, cx
+	
+	test ebx, ebx
+	jnz .mem_loop
+	mov word [di], 0xDEAD ; bad practice, but how I will check if memory struct is full
 
 .load_kernel:
 	mov bx, KERNEL_SEG
@@ -36,6 +58,11 @@ start:
 	or eax, 0x1
 	mov cr0, eax
 	jmp 0x8:protected_mode ; flush pipeline (so all 16 bit instructions are done)
+
+.mem_error:
+	mov si, MEM_ERR_MSG
+	call print_rm
+	jmp $
 
 [bits 32]
 protected_mode:
@@ -57,11 +84,11 @@ protected_mode:
 %include "print_string.asm"
 
 ; globals
-KERNEL_LOADING db "loading kernel...",0
-DISK_READ_SUCCESS db "successful disk read", 0
+KERNEL_LOADING db "loading kern",0
+DISK_READ_SUCCESS db "disk read", 0
 DISK_NUM db 0
-
-PM_STRING db "entered protected mode! using VGA interface", 0
+MEM_ERR_MSG db "mem err", 0
+PM_STRING db "PM", 0
 
 times(510 - ($-$$)) db 0
 
