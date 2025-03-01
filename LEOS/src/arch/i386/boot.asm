@@ -37,10 +37,10 @@ ident_pde:
 	mov [eax], edx
 z_pde_loop:
 	; for (i = 1; i < 512; i++):
-  	;	*(pd_addr + 4*i) = 0
+  	;	*(pd_addr + 4*i) = 2
 	mov edx, ecx
 	shl edx, 2
-	mov dword [eax + edx], 0
+	mov dword [eax + edx], 2
 	inc ecx
 	cmp ecx, 512
 	jne z_pde_loop
@@ -57,10 +57,10 @@ kern_pde:
 z_pde_loop2:
 	; Zero out rest of the Page Directory
 	; for (i = 513; i < 1024; i++):
-  	;	*(pd_addr + 4*i) = 0
+  	;	*(pd_addr + 4*i) = 2
 	mov edx, ecx
 	shl edx, 2
-	mov dword [eax + edx], 0
+	mov dword [eax + edx], 2 ; w/r on. just not present
 	inc ecx
 	cmp ecx, 1024
 	jne z_pde_loop2
@@ -69,16 +69,16 @@ ident_pte:
 	; for (i = 0; i < 256; i++):
   	;	*(pd_addr + 4096 + 4*i) = (i << 12) | PG_FLAGS
 	; for (; i < 1024; i++):
-  	;	*(pd_addr + 4096 + 4*i) = 0
+  	;	*(pd_addr + 4096 + 4*i) = 2
 	xor ecx, ecx
 	mov eax, PD_ADDR
 	add eax, 0x1000
 ident_map_loop:
 	mov edx, ecx
 	shl edx, 2
-	cmp ecx, 256
+	cmp ecx, 257	; map one extra page 0x101000
 	jl first_256
-	xor ebx, ebx
+	mov ebx, 2
 	jmp id_pte_asgn
 first_256:
 	mov ebx, ecx
@@ -107,18 +107,17 @@ kern_map_loop:
 	inc ecx
 	cmp ecx, 1024
 	jne kern_map_loop
-	jmp $	; DEBUG
+
 en_pg:
-	mov ebx, PD_ADDR
-	mov eax, cr3
-	and eax, 0xFFF ; clear top 20 bits of cr0
-	and ebx, 0xFFFF000 ; clear bottom 12 bits of address
-	add eax, ebx
-	mov cr3, eax ; load address to cr3 (not changing cache disabled, page write thru)
-	mov eax, cr0
-	or eax, 0x80000000 ; set cr0 pg bit
-	mov cr0, eax
-	jmp $	; DEBUG
+	mov eax, PD_ADDR
+	mov ebx, 0xBEEF
+	mov cr3, eax
+	mov edx, 0xDEAD
+ 	mov eax, cr0
+ 	or eax, 0x80000001
+ 	mov cr0, eax
+	mov eax, 0xC0DE
+;	jmp $	; jump forever bootsec mapped code
 	; TODO set up IDT
 	call _cstart
 	jmp $

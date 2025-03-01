@@ -3,6 +3,7 @@ CC := i686-elf-gcc
 AS := nasm
 LD := i686-elf-gcc
 OBJCPY := i686-elf-objcopy
+OBJDMP := i686-elf-objdump
 ARCH ?= i386
 
 # src tree
@@ -84,5 +85,9 @@ qemu: $(BUILD_DIR)/leos.img
 all: $(BUILD_DIR)/leos.img
 
 debug: $(BUILD_DIR)/leos.img
-	qemu-system-$(ARCH) -fda $< -s -S
 	@echo "Run gdb kern.bin ... target remote :1234"
+	qemu-system-$(ARCH) -fda $< -s -S
+log: $(BUILD_DIR)/leos.img
+	qemu-system-$(ARCH) -fda $< -d int,cpu_reset -no-reboot -D $(BUILD_DIR)/qemu.log
+	$(OBJDMP) -D $(BUILD_DIR)/kern.elf > kern_disass.log
+	$(OBJDMP) --adjust-vma=0x7c00 -D $(BUILD_DIR)/bootsec.bin -m $(ARCH) -b binary > bootsec_disass.log 

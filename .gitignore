@@ -59,3 +59,7 @@ barer_bones/build
 LEOS/build
 *.DS_Store
 *.img
+
+
+# LOG
+*.log
