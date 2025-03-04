@@ -22,7 +22,10 @@ size_t tty_col = 0;
 
 
 vga_t vga = {0x5, 0x0, 0x0};
+// temp:
+// volatile uint8_t* vga_mem = (volatile uint8_t*)0xb80000;
 volatile uint8_t* vga_mem = (volatile uint8_t*)0xb8000;
+
 
 static void tty_set_cursor(size_t x, size_t y) {
 	vga_set_cursor(index(x,y)/2);
@@ -97,7 +100,10 @@ void tty_print(const char* str) {
 }		
 
 static void tty_top() {
+	// temp:
+//	vga_mem = (volatile uint8_t*)0xb80000;
 	vga_mem = (volatile uint8_t*)0xb8000;
+
 }
 
 void tty_clear() {

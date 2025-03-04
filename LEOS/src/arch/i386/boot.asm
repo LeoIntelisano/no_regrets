@@ -119,5 +119,6 @@ en_pg:
 	mov eax, 0xC0DE
 ;	jmp $	; jump forever bootsec mapped code
 	; TODO set up IDT
+	;jmp $
 	call _cstart
 	jmp $
