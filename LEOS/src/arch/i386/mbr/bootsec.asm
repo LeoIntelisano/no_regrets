@@ -46,7 +46,7 @@ start:
 	mov bx, KERNEL_SEG
 	mov es, bx
 	mov bx, KERNEL_REG ; Load Kernel location
-	mov dh, 0x7     ; if you have an issue with the code being funky CHECK THIS!
+	mov dh, 42     ; if you have an issue with the code being funky CHECK THIS!
 	mov dl, [DISK_NUM]
 	call disk_read_rm
 	mov si, DISK_READ_SUCCESS
@@ -74,7 +74,7 @@ protected_mode:
 	; pm mode check
 	mov ebx, PM_STRING
 	call print_string
-	jmp 0x8:0x100000
+	jmp 0x8:0x100000	; Calls asm entry point
 	jmp $ 
 
 ; includes
