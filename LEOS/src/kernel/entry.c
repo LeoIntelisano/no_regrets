@@ -7,6 +7,8 @@
 
 void _cstart() {
 //	tty_clear();
+	asm volatile ("1: jmp 1b");
+	
 	uint32_t* temp = 0x300000;
 	*temp = "MEMORY VIOLATION";
 	bios_mem_map mem_map[32];

@@ -5,22 +5,23 @@ SECTIONS
     . = 0x100000;  /* Start at 1MB High Memory */
     _kernel_start = .;
 
-    .text.start : {
+    .text.start ALIGN(4K) : {
         *(.text.entry)
     }
-    . = 0x80000000; /* VMA addy after paging is enabled */
+    
+    . = 0x80000000 + SIZEOF(.text.start); /* VMA addy after paging is enabled */
 
-    .text ALIGN (4K) : AT(ADDR (.text) - 0x80000000) {
+    .text ALIGN (4K) : AT(ALIGN(LOADADDR(.text.start) + SIZEOF(.text.start), 4K)) {
         *(.text)              /* Other code */
     }
 
-    .data ALIGN (4K) : AT(ADDR (.data) - 0x80000000){
+    .data ALIGN (4K) : AT(ALIGN(LOADADDR(.text) + SIZEOF(.text), 4K)){
         *(.data)              /* Initialized data */
     }
-    .rodata ALIGN (4K) : AT(ADDR (.rodata) - 0x80000000) {
+    .rodata ALIGN (4K) : AT(ALIGN(LOADADDR(.data) + SIZEOF(.data), 4K)) {
         *(.rodata)
     }
-    .bss ALIGN(4K) : AT(ADDR (.bss) - 0x80000000) {
+    .bss ALIGN(4K) : AT(ALIGN(LOADADDR(.rodata) + SIZEOF(.rodata), 4K)) {
         *(.bss)               /* Uninitialized data */
     }
     _kernel_end = .;

@@ -76,7 +76,7 @@ ident_pte:
 ident_map_loop:
 	mov edx, ecx
 	shl edx, 2
-	cmp ecx, 257	; map one extra page 0x101000
+	cmp ecx, 257	; map one extra page 0x101000 so asm stub isn't a page fault
 	jl first_256
 	mov ebx, 2
 	jmp id_pte_asgn

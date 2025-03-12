@@ -14,17 +14,19 @@ BUILD_DIR := build
 KERNEL_DIR := $(SRC_DIR)/kernel
 DRIVERS_DIR := $(SRC_DIR)/drivers
 BOOT_DIR := $(ARCH_DIR)/mbr
+LOG_DIR := $(BUILD_DIR)/logs
 
 # where find will look for src files (exclude boot from asm arch specific srcs)
 C_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(DRIVERS_DIR)
 AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
 
 # flags
-CFLAGS ?= -I $(INC_DIR)/ -ffreestanding -Wall -Wextra -nostdlib
+CFLAGS ?= -I $(INC_DIR)/ -ffreestanding -Wall -Wextra -nostdlib -g
 LDFLAGS ?= -T $(ARCH_DIR)/linker.ld -ffreestanding -nostdlib -lgcc
-ASFLAGS ?= -felf
+ASFLAGS ?= -felf -gdwarf
 BSFLAGS ?= -f bin -I $(BOOT_DIR)
 OBJCPYFLAGS ?= -O binary
+OBJDBGFLAGS ?= --only-keep-debug
 
 # locate all c source files in kernel dir and arch dir
 C_SRCS = $(shell find $(C_DIRS) -type f -name '*.c') 
@@ -37,6 +39,9 @@ ASM_OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
 OBJS = $(C_OBJS) $(ASM_OBJS)
 
 $(BUILD_DIR):
+	mkdir -p $@
+
+$(LOG_DIR): $(BUILD_DIR)
 	mkdir -p $@
 
 $(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.c 
@@ -62,6 +67,9 @@ $(BUILD_DIR)/arch/$(ARCH)/%.o: $(ARCH_DIR)/%.asm
 $(BUILD_DIR)/kern.elf: $(OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@
 
+$(BUILD_DIR)/kern.sym: $(BUILD_DIR)/kern.elf
+	$(OBJCPY) $(OBJDBGFLAGS) $< $@
+
 $(BUILD_DIR)/kern.bin : $(BUILD_DIR)/kern.elf
 	$(OBJCPY) $(OBJCPYFLAGS) $< $@
 
@@ -75,7 +83,7 @@ $(BUILD_DIR)/leos.img: $(BUILD_DIR)/bootsec.bin $(BUILD_DIR)/kern.bin
 	dd if=$(BUILD_DIR)/kern.bin of=$@ bs=512 seek=1 conv=notrunc
 
 
-.PHONY: clean all qemu debug
+.PHONY: clean all qemu debug log
 clean:
 	rm -rf $(BUILD_DIR)
 
@@ -84,13 +92,15 @@ qemu: $(BUILD_DIR)/leos.img
 
 all: $(BUILD_DIR)/leos.img
 
-debug: $(BUILD_DIR)/leos.img
+debug: $(BUILD_DIR)/leos.img $(BUILD_DIR)/kern.sym
 	@echo "Run gdb kern.bin ... target remote :1234"
 	qemu-system-$(ARCH) -fda $< -s -S
-log: $(BUILD_DIR)/leos.img
-	qemu-system-$(ARCH) -fda $< -d int,cpu_reset -no-reboot -D $(BUILD_DIR)/qemu.log
-	$(OBJDMP) -D $(BUILD_DIR)/kern.elf > kern_disass.log
-	$(OBJDMP) --adjust-vma=0x7c00 -D $(BUILD_DIR)/bootsec.bin -m $(ARCH) -b binary > bootsec_disass.log 
+log: $(BUILD_DIR)/leos.img $(LOG_DIR)
+	$(OBJDMP) -h $(BUILD_DIR)/kern.elf > $(LOG_DIR)/kern_ld_map.log
+	$(OBJDMP) -M intel -D $(BUILD_DIR)/kern.elf > $(LOG_DIR)/kern_disass.log
+	$(OBJDMP) --adjust-vma=0x7c00 -M intel -D $(BUILD_DIR)/bootsec.bin -m $(ARCH) -b binary > $(LOG_DIR)/bootsec_disass.log 
+	$(OBJDMP) -b binary --adjust-vma=0x100000 -D $(BUILD_DIR)/kern.bin -M intel -m $(ARCH) > $(LOG_DIR)/kern_bin_disass.log
+	qemu-system-$(ARCH) -fda $< -d int,cpu_reset -no-reboot -D $(LOG_DIR)/qemu.log
 # vm: #ignore last two until I can get GDB working on mac
 #	qemu-system-x86_64 -m 4096 -drive file=../../gdb.img -netdev user,id=net0,hostfwd=tcp::10022-:22,hostfwd=tcp::1234-:1234 -device e1000,netdev=net0 &
 # mac: $(BUILD_DIR)/leos.img vm
