@@ -22,8 +22,7 @@ size_t tty_col = 0;
 
 
 vga_t vga = {0x5, 0x0, 0x0};
-// temp:
-// volatile uint8_t* vga_mem = (volatile uint8_t*)0xb80000;
+
 volatile uint8_t* vga_mem = (volatile uint8_t*)0xb8000;
 
 
@@ -89,7 +88,6 @@ void tty_test_row() {
 	for (size_t i = 0; i < VGA_WIDTH*2; i+=2) {
 		tty_putc('A' + (i / 2) % 26);
 	}
-//	tty_putc('Z');
 	tty_print(""); // update cursor
 }
 void tty_print(const char* str) {
@@ -100,8 +98,6 @@ void tty_print(const char* str) {
 }		
 
 static void tty_top() {
-	// temp:
-//	vga_mem = (volatile uint8_t*)0xb80000;
 	vga_mem = (volatile uint8_t*)0xb8000;
 
 }
@@ -111,6 +107,7 @@ void tty_clear() {
 	for (size_t i = 0; i < VGA_HEIGHT; i++){
 		tty_clear_r(i);
 	}
+	vga_set_cursor(0);
 }
 
 // TODO Cursor still maintains old color until new clear because attribute isn't written to entire line
