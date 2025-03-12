@@ -4,7 +4,7 @@ LEOS contains all information about the sticks and stone operating system I am m
 Everything else in this directory is most just a little learning project\
 Definitely go check out LEOS though!\
 Leo, if you are reading this it probably means you got sidetracked on a different project...\
-get back to work on this :P \
+get back to work on this :P
 ## Sys Info
 Cross compiler using GNU gcc toolchain: version 13.1.0\
 target arch: x86 (i386-elf)\
