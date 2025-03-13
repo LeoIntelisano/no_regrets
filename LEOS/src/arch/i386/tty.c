@@ -17,6 +17,7 @@ typedef struct {
 
 // consider using static for these globals
 
+// holds row and collumn values where next char will be written
 size_t tty_row = 0;
 size_t tty_col = 0;
 

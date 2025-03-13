@@ -6,19 +6,15 @@
 #include "kernel/memory_map.h"
 
 void _cstart() {
-//	tty_clear();
-	asm volatile ("1: jmp 1b");
+	tty_clear();
 	
-	uint32_t* temp = 0x300000;
-	*temp = "MEMORY VIOLATION";
+//	uint32_t* temp = 0x300000;
+//	*temp = "MEMORY VIOLATION";
 	bios_mem_map mem_map[32];
-
 	int ret = get_memory_map(mem_map, sizeof(bios_mem_map)*32);
-	if (!ret) {
-		tty_print("Memory map copy failed\n");
-	} else {
-		tty_print("Memory Map copy succeeded!\n");
-	}
+	
+	ret ? tty_print("Memory Map copy succeeded!\n") : tty_print("Memory map copy failed\n");
+	
 	
 	tty_print("Hello, Kernel World!\n");
 	uint8_t test = _test_asm();
@@ -29,9 +25,7 @@ void _cstart() {
 		tty_print("The asm stuff worked!?\n");
 	}
 	link_test();
-	tty_test();
 	tty_set_attr(0x3);
-	tty_print("Is the color different");
-	
+	tty_print("TTY Attribute Change");
 }
  
