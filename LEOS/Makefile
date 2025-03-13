@@ -13,12 +13,13 @@ ARCH_DIR := $(SRC_DIR)/arch/$(ARCH)
 BUILD_DIR := build
 KERNEL_DIR := $(SRC_DIR)/kernel
 DRIVERS_DIR := $(SRC_DIR)/drivers
+LIB_DIR := $(SRC_DIR)/lib
 BOOT_DIR := $(ARCH_DIR)/mbr
 LOG_DIR := $(BUILD_DIR)/logs
 
 # where find will look for src files (exclude boot from asm arch specific srcs)
-C_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(DRIVERS_DIR)
-AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR)
+C_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(DRIVERS_DIR) $(LIB_DIR)
+AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(LIB_DIR) # LIB_DIR for crt*.asm
 
 # flags
 CFLAGS ?= -I $(INC_DIR)/ -ffreestanding -Wall -Wextra -nostdlib -g
@@ -36,7 +37,13 @@ ASM_BOOT = $(BOOT_DIR)/bootsec.asm
 # pattern swap to create .o dependencies
 C_OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(C_SRCS))
 ASM_OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
-OBJS = $(C_OBJS) $(ASM_OBJS)
+
+CRTI_OBJ = $(BUILD_DIR)/lib/crti.o
+CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
+CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
+CRTN_OBJ = $(BUILD_DIR)/lib/crtn.o
+
+OBJS = $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(C_OBJS) $(ASM_OBJS) $(CRTEND_OBJ) $(CRTN_OBJ)
 
 $(BUILD_DIR):
 	mkdir -p $@
@@ -56,7 +63,16 @@ $(BUILD_DIR)/drivers/%.o: $(DRIVERS_DIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/lib/%.o: $(LIB_DIR)/%.c
+	mkdir -p $(@D)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.asm 
+	mkdir -p $(@D)
+	$(AS) $(ASFLAGS) $< -o $@
+
+# CRT* objs
+$(BUILD_DIR)/lib/%.o: $(LIB_DIR)/%.asm 
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
