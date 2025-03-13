@@ -26,18 +26,18 @@ start:
 	mov esp, ebp
 
 	
-paging:	; TODO set up paging
+.paging:	; TODO set up paging
 	mov eax, PD_ADDR
 	mov ebx, PHYS_ADDR
 	mov ecx, 1 ; loop index after first page table
-ident_pde:
+.ident_pde:
 	; set first pde for identity mapping
 	; *pd_addr = (pd_addr + 4096) | PT_FLAGS
 	mov edx, eax
 	add edx, 0x1000 ; identity page table starts 1 page afer page directory
 	or edx, PT_FLAGS
 	mov [eax], edx
-z_pde_loop:
+.z_pde_loop:
 	; for (i = 1; i < 512; i++):
   	;	*(pd_addr + 4*i) = 2
 	mov edx, ecx
@@ -45,8 +45,8 @@ z_pde_loop:
 	mov dword [eax + edx], 2
 	inc ecx
 	cmp ecx, 512
-	jne z_pde_loop
-kern_pde:
+	jne .z_pde_loop
+.kern_pde:
 	; Map kernel space (higher-half kernel)
 	; *(pd_addr + 4*512) = (pd_addr + 2*4096) | PT_FLAGS
 	mov edx, ecx
@@ -56,7 +56,7 @@ kern_pde:
 	or ebx, PT_FLAGS
 	mov [eax + edx], ebx
 	inc ecx
-z_pde_loop2:
+.z_pde_loop2:
 	; Zero out rest of the Page Directory
 	; for (i = 513; i < 1024; i++):
   	;	*(pd_addr + 4*i) = 2
@@ -65,8 +65,8 @@ z_pde_loop2:
 	mov dword [eax + edx], 2 ; w/r on. just not present
 	inc ecx
 	cmp ecx, 1024
-	jne z_pde_loop2
-ident_pte:
+	jne .z_pde_loop2
+.ident_pte:
 	; // Identity map first 1MB (256 entries) and zero rest
 	; for (i = 0; i < 256; i++):
   	;	*(pd_addr + 4096 + 4*i) = (i << 12) | PG_FLAGS
@@ -75,30 +75,30 @@ ident_pte:
 	xor ecx, ecx
 	mov eax, PD_ADDR
 	add eax, 0x1000
-ident_map_loop:
+.ident_map_loop:
 	mov edx, ecx
 	shl edx, 2
 	cmp ecx, 257	; map one extra page 0x101000 so asm stub isn't a page fault
-	jl first_256
+	jl .first_256
 	mov ebx, 2
-	jmp id_pte_asgn
-first_256:
+	jmp .id_pte_asgn
+.first_256:
 	mov ebx, ecx
 	shl ebx, 12
 	or ebx, PG_FLAGS
-id_pte_asgn:
+.id_pte_asgn:
 	mov [eax + edx], ebx
 	inc ecx
 	cmp ecx, 1024
-	jne ident_map_loop
-kern_pte:
+	jne .ident_map_loop
+.kern_pte:
 	; // Fill kernel Page Table
 	; for (j = 0; j < 1024; j++):
   	; 	*(pd_addr + 2*4096 + 4*j) = (phys_addr + (j << 12)) | PG_FLAGS
 	mov eax, PD_ADDR
 	add eax, 0x2000
 	xor ecx, ecx
-kern_map_loop:
+.kern_map_loop:
 	mov edx, ecx
 	shl edx, 2
 	mov ebx, ecx
@@ -108,9 +108,9 @@ kern_map_loop:
 	mov [eax + edx], ebx
 	inc ecx
 	cmp ecx, 1024
-	jne kern_map_loop
+	jne .kern_map_loop
 
-en_pg:
+.en_pg:
 	mov eax, PD_ADDR
 	mov ebx, 0xBEEF
 	mov cr3, eax
@@ -119,10 +119,10 @@ en_pg:
  	or eax, 0x80000001
  	mov cr0, eax
 	mov eax, 0xC0DE
-;	jmp $	; jump forever bootsec mapped code
-	; TODO set up IDT
-	;jmp $
 
+	; TODO set up IDT
+
+.crt:
 	call _init
 	call _cstart
 	call _fini ; kind of unnecessary tbh
