@@ -1,12 +1,16 @@
 # no_regrets
-Leo, please actually work on this OS i beg you\
-This is the beginning of my os design journey. The odds this will be working in the future are quite slim. Nonetheless, I hope I continue to build this out.
+Welcome to the root of my OS journey\
+LEOS contains all information about the sticks and stone operating system I am making\
+Everything else in this directory is most just a little learning project\
+Definitely go check out LEOS though!\
+Leo, if you are reading this it probably means you got sidetracked on a different project...\
+get back to work on this :P
 ## Sys Info
 Cross compiler using GNU gcc toolchain: version 13.1.0\
-target arch: x86 (i686-elf)\
-bootloading with GRUB\
+target arch: x86 (i386-elf)\
+bootloading with my own boof creation\
 Emulating with QEMU\
-Build Environment: non existent
+Build Environment: Make, NASM, GNU cross-compiler, dd for floppy
 
 ### References
 Read Modern Computer Architecture and Organization\

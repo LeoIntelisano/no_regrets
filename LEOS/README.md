@@ -3,11 +3,13 @@
 To educate the creator
 ## Build
 makefile in root\
-`make install` to build
+`make all` to build\
+`make qemu`to run
 ## Capabilities
-None
+- Paging enabled
+- VGA tty output
 ## Issues
-Many
+Shhhh
 ## OS Structure
 ```
 /
@@ -35,4 +37,3 @@ Many
     ├── local/          # Local software installation
     └── sbin/           # System binaries
 ```
-Thanks, chat gpt for generating that tree
