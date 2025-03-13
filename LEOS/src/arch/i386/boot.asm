@@ -2,6 +2,8 @@
 ; assumes already in protected mode
 [bits 32]
 [extern _cstart]
+[extern _init]
+[extern _fini]
 
 PT_FLAGS equ 0x3; page table flags [Super(0) | R/W | PRES]
 PG_FLAGS equ 0x3 ; page flags
@@ -120,5 +122,8 @@ en_pg:
 ;	jmp $	; jump forever bootsec mapped code
 	; TODO set up IDT
 	;jmp $
+
+	call _init
 	call _cstart
+	call _fini ; kind of unnecessary tbh
 	jmp $

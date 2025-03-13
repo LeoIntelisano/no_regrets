@@ -13,6 +13,8 @@ SECTIONS
 
     .text ALIGN (4K) : AT(ALIGN(LOADADDR(.text.start) + SIZEOF(.text.start), 4K)) {
         *(.text)              /* Other code */
+        *(.init)
+        *(.fini)
     }
 
     .data ALIGN (4K) : AT(ALIGN(LOADADDR(.text) + SIZEOF(.text), 4K)){
@@ -25,5 +27,5 @@ SECTIONS
         *(.bss)               /* Uninitialized data */
     }
     _kernel_end = .;
-    /DISCARD/ : { *(.comment) *(.eh_frame) }
+    /DISCARD/ : { *(.comment)}
 }
