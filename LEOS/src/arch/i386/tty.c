@@ -57,10 +57,12 @@ int tty_putc(int ch) {
 	if (ch == '\n'){
 		tty_row++;
 		tty_col = 0;
+		tty_set_cursor(tty_col % VGA_WIDTH, tty_row % VGA_HEIGHT);
 		return '\n';
 	}
 	if (ch == '\t'){
 		tty_col = (tty_col + (4 - tty_col%4)) % VGA_WIDTH;
+		tty_set_cursor(tty_col % VGA_WIDTH, tty_row % VGA_HEIGHT);
 		return '\t';
 	}
 	tty_putc_at(ch, tty_col, tty_row);
@@ -86,19 +88,16 @@ void tty_test(){
 	for (size_t i = 0; i < VGA_WIDTH * VGA_HEIGHT * 2; i+=2) {
         tty_putc('A' + (i / 2) % 26);  // Characters A-Z in a loop
     }
-	tty_print(""); // update cursor
 }
 void tty_test_1_left(){
 	for (size_t i = 0; i < VGA_WIDTH * VGA_HEIGHT * 2 - 2; i+=2) {
         tty_putc('A' + (i / 2) % 26);  // Characters A-Z in a loop
     }
-	tty_print(""); // update cursor
 }
 void tty_test_row() {
 	for (size_t i = 0; i < VGA_WIDTH*2; i+=2) {
 		tty_putc('A' + (i / 2) % 26);
 	}
-	tty_print(""); // update cursor
 }
 void tty_print(const char* str) {
 	while (*str) {
