@@ -8,18 +8,18 @@ ARCH ?= i386
 
 # src tree
 SRC_DIR := src
-INC_DIR := $(SRC_DIR)/include
+INC_DIR := include
 ARCH_DIR := $(SRC_DIR)/arch/$(ARCH)
 BUILD_DIR := build
 KERNEL_DIR := $(SRC_DIR)/kernel
 DRIVERS_DIR := $(SRC_DIR)/drivers
-LIB_DIR := $(SRC_DIR)/lib
+LIBC_DIR := $(SRC_DIR)/libc
 BOOT_DIR := $(ARCH_DIR)/mbr
 LOG_DIR := $(BUILD_DIR)/logs
 
 # where find will look for src files (exclude boot from asm arch specific srcs)
-C_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(DRIVERS_DIR) $(LIB_DIR)
-AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(LIB_DIR) # LIB_DIR for crt*.asm
+C_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(DRIVERS_DIR) $(LIBC_DIR)
+AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(LIBC_DIR) # LIB_DIR for crt*.asm
 
 # flags
 CFLAGS ?= -I $(INC_DIR)/ -ffreestanding -Wall -Wextra -nostdlib -g
@@ -63,15 +63,11 @@ $(BUILD_DIR)/drivers/%.o: $(DRIVERS_DIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/lib/%.o: $(LIB_DIR)/%.c
+$(BUILD_DIR)/libc/%.o: $(LIBC_DIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.asm 
-	mkdir -p $(@D)
-	$(AS) $(ASFLAGS) $< -o $@
-
-$(BUILD_DIR)/lib/%.o: $(LIB_DIR)/%.asm 
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
