@@ -1,5 +1,4 @@
-#include <libc/string.h>
-#include <stddef.h>
+#include <string.h>
 
 int memcmp(const void* src1, const void* src2, size_t n) {
     const unsigned char* l = (const unsigned char*)src1;

@@ -1,4 +1,4 @@
-#include <libc/stdio.h>
+#include <stdio.h>
 #include <sys/cdefs.h>
 
 #if defined(__is_libk)

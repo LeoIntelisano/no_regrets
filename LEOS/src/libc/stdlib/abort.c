@@ -1,7 +1,6 @@
 // FROM OSDEV: https://wiki.osdev.org/Meaty_Skeleton
-
-#include <libc/stdlib.h>
-#include <libc/stdio.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 __attribute__((__noreturn__))
 void abort(void) {

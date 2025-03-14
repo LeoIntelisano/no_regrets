@@ -1,10 +1,11 @@
 #include <stdint.h>
+#include <stdio.h>
+
 #include <kernel/tty.h>
 #include <io/io.h>
 #include <drivers/dt.h>
 #include <drivers/vga.h>
 #include <kernel/memory_map.h>
-#include <libc/stdio.h>
 
 void _cstart() {
 	tty_clear();

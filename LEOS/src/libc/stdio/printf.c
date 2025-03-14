@@ -3,8 +3,8 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdarg.h>
-#include <libc/stdio.h>
-#include <libc/string.h>
+#include <stdio.h>
+#include <string.h>
 
 //TODO: Make my own implementation of this... don't want to use OS Dev's forever
 
