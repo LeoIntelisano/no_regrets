@@ -18,4 +18,7 @@ void tty_test_1_left();
 
 // Sets attribute bits: [7] blink, [6:4] bg color, [3:0] fg color
 void tty_set_attr(uint8_t attr);
+void tty_set_color(uint8_t fg, uint8_t bg);
+
+uint8_t tty_get_attr();
 #endif	// TTY_H

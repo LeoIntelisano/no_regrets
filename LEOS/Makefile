@@ -93,8 +93,9 @@ $(BUILD_DIR)/arch/$(ARCH)/%.asm.o: $(ARCH_DIR)/%.asm
 	$(AS) $(ASFLAGS) $< -o $@
 
 # Make static libc:
-$(LIB_DIR)/libk.a: $(LIB_DIR) $(LIBC_OBJS)
-	$(AR) $(ARFLAGS) $@ $(LIBC_OBJS)
+$(LIB_DIR)/libk.a: $(LIBC_OBJS)
+	mkdir -p $(@D)
+	$(AR) $(ARFLAGS) $@ $^
 
 # Link everything for kernel executable
 $(BUILD_DIR)/kern.elf: $(LINK)

@@ -1,15 +1,26 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <kernel/memory_map.h>
 #include <kernel/tty.h>
+#include <kernel/term.h>
+#include <kernel/logging.h>
+
 #include <io/io.h>
 #include <drivers/dt.h>
 #include <drivers/vga.h>
-#include <kernel/memory_map.h>
 
 void _cstart() {
+	K_TERMINAL* term = &tty_term;
+	term->clear();
+	const char* str = "PRINTF TEST";
+	printf("%s\n", str);
+	term->print("Hello, kernel World!\n");
+	k_panic(term, "%s GUYS WTF\n", str);
+	k_warn(term, "You really shouldn't be doing that\n");
+	k_info(term, "smart\n");	
+/*
 	tty_clear();
-	
 //	uint32_t* temp = 0x300000;
 //	*temp = "MEMORY VIOLATION";
 	bios_mem_map mem_map[32];
@@ -30,7 +41,8 @@ void _cstart() {
 	tty_set_attr(0x3);
 	tty_print("TTY Attribute Change\n");
 
-	const char* str = "PRINTF TEST";
-	printf("%s\n", str);
+	
+
+	*/
 }
  

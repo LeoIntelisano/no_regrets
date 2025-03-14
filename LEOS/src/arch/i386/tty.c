@@ -59,7 +59,10 @@ int tty_putc(int ch) {
 		tty_col = 0;
 		return '\n';
 	}
-	
+	if (ch == '\t'){
+		tty_col = (tty_col + (4 - tty_col%4)) % VGA_WIDTH;
+		return '\t';
+	}
 	tty_putc_at(ch, tty_col++, tty_row);
 	
 	if (tty_col >= VGA_WIDTH) {
@@ -114,4 +117,11 @@ void tty_clear() {
 // TODO Cursor still maintains old color until new clear because attribute isn't written to entire line
 void tty_set_attr(uint8_t attr) {
 	*(uint8_t*)&vga = attr;
+}
+void tty_set_color(uint8_t fg, uint8_t bg) {
+	tty_set_attr((fg & 0xF) | ((bg & 7) << 4));
+}
+
+uint8_t tty_get_attr() {
+	return *(uint8_t*)&vga;
 }
