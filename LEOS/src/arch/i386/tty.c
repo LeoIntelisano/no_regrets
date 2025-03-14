@@ -1,7 +1,7 @@
 // src/arch/i386/tty.c -- tty implementation for x86
 #include <stdint.h>
 #include <stddef.h>
-#include "tty/tty.h"
+#include "kernel/tty.h"
 #include "drivers/vga.h"
 
 #define index(x,y)((x+VGA_WIDTH*y)*2)
@@ -52,7 +52,7 @@ static void tty_scroll(){
 	tty_row = VGA_HEIGHT-1;
 	tty_col = 0;
 }
-static int tty_putc(int ch) {	
+int tty_putc(int ch) {	
 	// format checks #TODO Add other special character checks 
 	if (ch == '\n'){
 		tty_row++;
@@ -70,6 +70,7 @@ static int tty_putc(int ch) {
 	if (tty_row >= VGA_HEIGHT) {
 		tty_scroll();
 	}
+	tty_set_cursor(tty_col % VGA_WIDTH, tty_row % VGA_HEIGHT);
 	return ch;
 }
 
@@ -95,7 +96,6 @@ void tty_print(const char* str) {
 	while (*str) {
 		tty_putc(*str++);
 	}
-	tty_set_cursor(tty_col % VGA_WIDTH, tty_row % VGA_HEIGHT);
 }		
 
 static void tty_top() {

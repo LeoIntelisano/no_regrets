@@ -5,7 +5,7 @@
 
 /* prints n characters to tty hardware */
 void tty_print(const char*);
-
+int tty_putc(int);
 /* fills tty buffer with 0s... clears screen */
 void tty_clear();
 
