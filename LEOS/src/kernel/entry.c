@@ -18,7 +18,9 @@ void _cstart() {
 	term->print("Hello, kernel World!\n");
 	k_panic(term, "%s GUYS WTF\n", str);
 	k_warn(term, "You really shouldn't be doing that\n");
-	k_info(term, "smart\n");	
+	k_info(term, "smart");
+	term->set_color(BLUE, BLACK);
+	//term->putchar((int)'A');
 /*
 	tty_clear();
 //	uint32_t* temp = 0x300000;

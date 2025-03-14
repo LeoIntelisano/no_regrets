@@ -63,7 +63,8 @@ int tty_putc(int ch) {
 		tty_col = (tty_col + (4 - tty_col%4)) % VGA_WIDTH;
 		return '\t';
 	}
-	tty_putc_at(ch, tty_col++, tty_row);
+	tty_putc_at(ch, tty_col, tty_row);
+	tty_col++;
 	
 	if (tty_col >= VGA_WIDTH) {
 		tty_col = 0;
@@ -73,6 +74,10 @@ int tty_putc(int ch) {
 	if (tty_row >= VGA_HEIGHT) {
 		tty_scroll();
 	}
+
+	if (vga_mem[index((tty_col)%VGA_WIDTH, tty_row)] = (uint8_t)' ')
+		vga_mem[index((tty_col)%VGA_WIDTH, tty_row) + 1] = *(uint8_t*)&vga;
+
 	tty_set_cursor(tty_col % VGA_WIDTH, tty_row % VGA_HEIGHT);
 	return ch;
 }
@@ -113,9 +118,10 @@ void tty_clear() {
 	vga_set_cursor(0);
 }
 
-// TODO Cursor still maintains old color until new clear because attribute isn't written to entire line
 void tty_set_attr(uint8_t attr) {
 	*(uint8_t*)&vga = attr;
+	if (vga_mem[index((tty_col)%VGA_WIDTH, tty_row)] = (uint8_t)' ')
+		vga_mem[index((tty_col)%VGA_WIDTH, tty_row) + 1] = *(uint8_t*)&vga;
 }
 void tty_set_color(uint8_t fg, uint8_t bg) {
 	tty_set_attr((fg & 0xF) | ((bg & 7) << 4));
