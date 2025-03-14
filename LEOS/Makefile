@@ -38,10 +38,10 @@ ASM_BOOT = $(BOOT_DIR)/bootsec.asm
 C_OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(C_SRCS))
 ASM_OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
 
-CRTI_OBJ = $(BUILD_DIR)/lib/crti.o
+CRTI_OBJ = $(BUILD_DIR)/arch/$(ARCH)/crti.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
-CRTN_OBJ = $(BUILD_DIR)/lib/crtn.o
+CRTN_OBJ = $(BUILD_DIR)/arch/$(ARCH)/crtn.o
 
 OBJS = $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(C_OBJS) $(ASM_OBJS) $(CRTEND_OBJ) $(CRTN_OBJ)
 
@@ -71,7 +71,6 @@ $(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.asm
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
-# CRT* objs
 $(BUILD_DIR)/lib/%.o: $(LIB_DIR)/%.asm 
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@

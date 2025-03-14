@@ -1,9 +1,10 @@
 #include <stdint.h>
-#include "tty/tty.h"
-#include "io/io.h"
-#include "drivers/dt.h"
-#include "drivers/vga.h"
-#include "kernel/memory_map.h"
+#include <kernel/tty.h>
+#include <io/io.h>
+#include <drivers/dt.h>
+#include <drivers/vga.h>
+#include <kernel/memory_map.h>
+#include <libc/stdio.h>
 
 void _cstart() {
 	tty_clear();
@@ -26,6 +27,9 @@ void _cstart() {
 	}
 	link_test();
 	tty_set_attr(0x3);
-	tty_print("TTY Attribute Change");
+	tty_print("TTY Attribute Change\n");
+
+	const char* str = "PRINTF TEST";
+	printf("%s\n", str);
 }
  
