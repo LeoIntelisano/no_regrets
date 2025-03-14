@@ -4,55 +4,70 @@ AS := nasm
 LD := i686-elf-gcc
 OBJCPY := i686-elf-objcopy
 OBJDMP := i686-elf-objdump
+AR := i686-elf-ar
 ARCH ?= i386
 
 # src tree
 SRC_DIR := src
 INC_DIR := include
-ARCH_DIR := $(SRC_DIR)/arch/$(ARCH)
 BUILD_DIR := build
+LIB_DIR := lib
+
+ARCH_DIR := $(SRC_DIR)/arch/$(ARCH)
 KERNEL_DIR := $(SRC_DIR)/kernel
 DRIVERS_DIR := $(SRC_DIR)/drivers
 LIBC_DIR := $(SRC_DIR)/libc
 BOOT_DIR := $(ARCH_DIR)/mbr
+
 LOG_DIR := $(BUILD_DIR)/logs
 
 # where find will look for src files (exclude boot from asm arch specific srcs)
 C_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(DRIVERS_DIR) $(LIBC_DIR)
 AS_DIRS := $(KERNEL_DIR) $(ARCH_DIR) $(LIBC_DIR) # LIB_DIR for crt*.asm
 
-# flags
-CFLAGS ?= -I $(INC_DIR)/ -ffreestanding -Wall -Wextra -nostdlib -g
-LDFLAGS ?= -T $(ARCH_DIR)/linker.ld -ffreestanding -nostdlib -lgcc
+# TODO: Fix dependencies! Not remaking with header changes
+# flags (REMOVED -nostdlib from C flags and ld flags)
+CFLAGS ?= -I $(INC_DIR)/ -I $(INC_DIR)/libc -ffreestanding -Wall -Wextra -g -MD -MP
+LDFLAGS ?= -T $(ARCH_DIR)/linker.ld -ffreestanding -lgcc -nostdlib -L$(LIB_DIR) -lk 
 ASFLAGS ?= -felf -gdwarf
 BSFLAGS ?= -f bin -I $(BOOT_DIR)
 OBJCPYFLAGS ?= -O binary
 OBJDBGFLAGS ?= --only-keep-debug
 LIBK_CFLAGS ?= $(CFLAGS) -D__is_libk
- # TODO compile libc to libc.a and link against the library
+ARFLAGS ?= rcs
 
-# locate all c source files in kernel dir and arch dir
-C_SRCS = $(shell find $(C_DIRS) -type f -name '*.c') 
+
+# locate all c source files in src. Prune bootsec code and LIBC (linked differently)
+C_SRCS = $(shell find $(C_DIRS) -path $(LIBC_DIR) -prune -o -type f -name '*.c' -print) 
+LIBC_SRCS = $(shell find $(LIBC_DIR) -type f -name '*.c') 
 ASM_SRCS = $(shell find $(AS_DIRS) -path $(BOOT_DIR) -prune -o -type f -name '*.asm' -print)
 ASM_BOOT = $(BOOT_DIR)/bootsec.asm
 
 # pattern swap to create .o dependencies
 C_OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.c.o, $(C_SRCS))
+LIBC_OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.c.o, $(LIBC_SRCS))
 ASM_OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.asm.o, $(ASM_SRCS))
+
+# TODO change to patsubst like above
+LIBS = $(LIB_DIR)/libk.a
 
 CRTI_OBJ = $(BUILD_DIR)/arch/$(ARCH)/crti.asm.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 CRTN_OBJ = $(BUILD_DIR)/arch/$(ARCH)/crtn.asm.o
 
-OBJS = $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(C_OBJS) $(ASM_OBJS) $(CRTEND_OBJ) $(CRTN_OBJ)
+LINK = $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(C_OBJS) $(ASM_OBJS) $(LIBS) $(CRTEND_OBJ) $(CRTN_OBJ)
+DEP_FILES = $(C_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.d) $(LIBC_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.d)
 
+# Make directories
 $(BUILD_DIR):
 	mkdir -p $@
-
+$(LIB_DIR):
+	mkdir -p $@
 $(LOG_DIR): $(BUILD_DIR)
 	mkdir -p $@
 
+# Use pattern swapped sources as targets to make objects 
 $(BUILD_DIR)/kernel/%.c.o: $(KERNEL_DIR)/%.c 
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -67,7 +82,7 @@ $(BUILD_DIR)/drivers/%.c.o: $(DRIVERS_DIR)/%.c
 
 $(BUILD_DIR)/libc/%.c.o: $(LIBC_DIR)/%.c
 	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(LIBK_CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/kernel/%.asm.o: $(KERNEL_DIR)/%.asm 
 	mkdir -p $(@D)
@@ -77,7 +92,12 @@ $(BUILD_DIR)/arch/$(ARCH)/%.asm.o: $(ARCH_DIR)/%.asm
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
-$(BUILD_DIR)/kern.elf: $(OBJS)
+# Make static libc:
+$(LIB_DIR)/libk.a: $(LIB_DIR) $(LIBC_OBJS)
+	$(AR) $(ARFLAGS) $@ $(LIBC_OBJS)
+
+# Link everything for kernel executable
+$(BUILD_DIR)/kern.elf: $(LINK)
 	$(LD) $(LDFLAGS) $^ -o $@
 
 $(BUILD_DIR)/kern.sym: $(BUILD_DIR)/kern.elf
@@ -95,10 +115,12 @@ $(BUILD_DIR)/leos.img: $(BUILD_DIR)/bootsec.bin $(BUILD_DIR)/kern.bin
 	dd if=$(BUILD_DIR)/bootsec.bin of=$@ bs=512 count=1 conv=notrunc
 	dd if=$(BUILD_DIR)/kern.bin of=$@ bs=512 seek=1 conv=notrunc
 
+-include $(DEP_FILES)
 
 .PHONY: clean all qemu debug log
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -rf $(LIB_DIR)
 
 qemu: $(BUILD_DIR)/leos.img
 	qemu-system-$(ARCH) -fda $<
