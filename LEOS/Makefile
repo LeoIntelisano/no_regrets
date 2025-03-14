@@ -28,6 +28,8 @@ ASFLAGS ?= -felf -gdwarf
 BSFLAGS ?= -f bin -I $(BOOT_DIR)
 OBJCPYFLAGS ?= -O binary
 OBJDBGFLAGS ?= --only-keep-debug
+LIBK_CFLAGS ?= $(CFLAGS) -D__is_libk
+ # TODO compile libc to libc.a and link against the library
 
 # locate all c source files in kernel dir and arch dir
 C_SRCS = $(shell find $(C_DIRS) -type f -name '*.c') 
@@ -35,13 +37,13 @@ ASM_SRCS = $(shell find $(AS_DIRS) -path $(BOOT_DIR) -prune -o -type f -name '*.
 ASM_BOOT = $(BOOT_DIR)/bootsec.asm
 
 # pattern swap to create .o dependencies
-C_OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(C_SRCS))
-ASM_OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
+C_OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.c.o, $(C_SRCS))
+ASM_OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.asm.o, $(ASM_SRCS))
 
-CRTI_OBJ = $(BUILD_DIR)/arch/$(ARCH)/crti.o
+CRTI_OBJ = $(BUILD_DIR)/arch/$(ARCH)/crti.asm.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
-CRTN_OBJ = $(BUILD_DIR)/arch/$(ARCH)/crtn.o
+CRTN_OBJ = $(BUILD_DIR)/arch/$(ARCH)/crtn.asm.o
 
 OBJS = $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(C_OBJS) $(ASM_OBJS) $(CRTEND_OBJ) $(CRTN_OBJ)
 
@@ -51,27 +53,27 @@ $(BUILD_DIR):
 $(LOG_DIR): $(BUILD_DIR)
 	mkdir -p $@
 
-$(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.c 
+$(BUILD_DIR)/kernel/%.c.o: $(KERNEL_DIR)/%.c 
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/arch/$(ARCH)/%.o: $(ARCH_DIR)/%.c 
+$(BUILD_DIR)/arch/$(ARCH)/%.c.o: $(ARCH_DIR)/%.c 
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/drivers/%.o: $(DRIVERS_DIR)/%.c
+$(BUILD_DIR)/drivers/%.c.o: $(DRIVERS_DIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/libc/%.o: $(LIBC_DIR)/%.c
+$(BUILD_DIR)/libc/%.c.o: $(LIBC_DIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/kernel/%.o: $(KERNEL_DIR)/%.asm 
+$(BUILD_DIR)/kernel/%.asm.o: $(KERNEL_DIR)/%.asm 
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
-$(BUILD_DIR)/arch/$(ARCH)/%.o: $(ARCH_DIR)/%.asm
+$(BUILD_DIR)/arch/$(ARCH)/%.asm.o: $(ARCH_DIR)/%.asm
 	mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
