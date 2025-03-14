@@ -103,7 +103,6 @@ void tty_print(const char* str) {
 
 static void tty_top() {
 	vga_mem = (volatile uint8_t*)0xb8000;
-
 }
 
 void tty_clear() {
