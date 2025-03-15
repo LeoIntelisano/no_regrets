@@ -4,13 +4,25 @@
 #include <stdarg.h>
 
 static void k_print(K_TERMINAL* term, const char* format, va_list args) {
-   
-    char buffer[256];
+    char buffer[MAX_PRINT_STREAM];
     vsnprintf(buffer, sizeof(buffer), format, args);
     term->print(buffer);
 }
 
-void k_panic(K_TERMINAL* term, const char* format, ...) {
+void k_printf(K_TERMINAL* term, const char* __restrict format, ...) {
+    va_list args;
+    va_start(args, format);
+    
+    if (!term) {
+        vprintf(format, args);
+        va_end(args);
+        return;
+    }
+    k_print(term, format, args);
+    va_end(args);
+}
+
+void k_panic(K_TERMINAL* term, const char* __restrict format, ...) {
     va_list args;
     va_start(args, format);
     const char* p = "[PANIC]\t";
@@ -18,6 +30,7 @@ void k_panic(K_TERMINAL* term, const char* format, ...) {
     if (!term) {
         printf("%s", p);
         vprintf(format, args);
+        va_end(args);
         return;
     }
 
@@ -32,7 +45,7 @@ void k_panic(K_TERMINAL* term, const char* format, ...) {
 }
 
 
-void k_warn(K_TERMINAL* term, const char* format, ...) {
+void k_warn(K_TERMINAL* term, const char* __restrict format, ...) {
     va_list args;
     va_start(args, format);
     const char* p = "[WARN]\t";
@@ -40,6 +53,7 @@ void k_warn(K_TERMINAL* term, const char* format, ...) {
     if (!term) {
         printf("%s", p);
         vprintf(format, args);
+        va_end(args);
         return;
     }
 
@@ -52,7 +66,7 @@ void k_warn(K_TERMINAL* term, const char* format, ...) {
     k_print(term, format, args);
     va_end(args);
 }
-void k_info(K_TERMINAL* term, const char* format, ...) {
+void k_info(K_TERMINAL* term, const char* __restrict format, ...) {
     va_list args;
     va_start(args, format);
     const char* p = "[INFO]\t";
@@ -60,6 +74,7 @@ void k_info(K_TERMINAL* term, const char* format, ...) {
     if (!term) {
         printf("%s", p);
         vprintf(format, args);
+        va_end(args);
         return;
     }
 
