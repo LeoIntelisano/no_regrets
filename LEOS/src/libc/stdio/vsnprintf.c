@@ -48,7 +48,52 @@ int vsnprintf(char* buffer, size_t size, const char* __restrict format, va_list 
 
             memcpy(&buffer[written], str, len);
             written += len;
-        } else {
+        } else if (*format == 'i' || *format == 'd') {
+            format++;
+            int d = va_arg(parameters, int);
+            if (d == 0) {
+                if (written < size - 1)
+                    buffer[written++] = '0';
+            } else {
+                char temp[32];
+                int index = 0;
+                int neg = (d < 0);
+                if (neg) d = -d;
+        
+                while (d) {
+                    temp[index++] = (d % 10) + '0';
+                    d /= 10;
+                }
+                if (neg && written < size - 1)
+                    buffer[written++] = '-';
+                // Copy in correct order
+                while (index > 0 && written < size - 1)
+                    buffer[written++] = temp[--index];
+            }
+        } else if (*format == 'x' || *format == 'X') {
+            char temp[32];  // Enough for 32-bit integer
+            int index = 0;
+            int hex = va_arg(parameters, int);
+        
+            if (hex == 0) {
+                if (written < size - 1)
+                    buffer[written++] = '0';
+            } else {
+                while (hex) {
+                    int temp_val = hex % 16;
+                    temp[index++] = (temp_val < 10) ? 
+                                    (temp_val + '0') : 
+                                    (temp_val - 10 + ((*format == 'x') ? 'a' : 'A'));
+                    hex /= 16;
+                }
+               
+                // Copy in correct order
+                while (index > 0 && written < size - 1)
+                    buffer[written++] = temp[--index];
+            }
+            format++;
+        }
+        else {
             format = format_begun_at;
             size_t len = strlen(format);
 
