@@ -73,7 +73,7 @@ int vsnprintf(char* buffer, size_t size, const char* __restrict format, va_list 
         } else if (*format == 'x' || *format == 'X') {
             char temp[32];  // Enough for 32-bit integer
             int index = 0;
-            int hex = va_arg(parameters, int);
+            unsigned int hex = va_arg(parameters, unsigned int);
         
             if (hex == 0) {
                 if (written < size - 1)
