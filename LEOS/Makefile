@@ -129,7 +129,7 @@ qemu: $(BUILD_DIR)/leos.img
 all: $(BUILD_DIR)/leos.img
 
 debug: $(BUILD_DIR)/leos.img $(BUILD_DIR)/kern.sym
-	@echo "Run gdb kern.bin ... target remote :1234"
+	@echo "Run gdb or lldb kern.bin ... target remote :1234"
 	qemu-system-$(ARCH) -fda $< -s -S
 log: $(BUILD_DIR)/leos.img $(LOG_DIR)
 	$(OBJDMP) -h $(BUILD_DIR)/kern.elf > $(LOG_DIR)/kern_ld_map.log
@@ -139,5 +139,4 @@ log: $(BUILD_DIR)/leos.img $(LOG_DIR)
 	qemu-system-$(ARCH) -fda $< -d int,cpu_reset -no-reboot -D $(LOG_DIR)/qemu.log
 # vm: #ignore last two until I can get GDB working on mac
 #	qemu-system-x86_64 -m 4096 -drive file=../../gdb.img -netdev user,id=net0,hostfwd=tcp::10022-:22,hostfwd=tcp::1234-:1234 -device e1000,netdev=net0 &
- mac: $(BUILD_DIR)/leos.img
-	qemu-system-$(ARCH) -fda $< -s -S & lldb build/kern.elf
+
