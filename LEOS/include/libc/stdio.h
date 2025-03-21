@@ -16,6 +16,7 @@ int vprintf(const char* __restrict, va_list);
 int vsnprintf(char*, size_t, const char* __restrict, va_list);
 int putchar(int);
 int puts(const char*);
+char* itoa(int, char*, int);
 
 #ifdef __cplusplus
 }

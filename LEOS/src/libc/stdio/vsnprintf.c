@@ -7,7 +7,6 @@ int vsnprintf(char* buffer, size_t size, const char* __restrict format, va_list 
 
     while (*format != '\0') {
         if (written >= size - 1) { // Ensure room for null terminator
-            // Truncate and null-terminate the buffer
             buffer[size - 1] = '\0';
             return written;
         }
@@ -20,7 +19,7 @@ int vsnprintf(char* buffer, size_t size, const char* __restrict format, va_list 
                 amount++;
 
             if (written + amount >= size) {
-                amount = size - written - 1; // Prevent overflow
+                amount = size - written - 1;
             }
 
             memcpy(&buffer[written], format, amount);
@@ -30,6 +29,7 @@ int vsnprintf(char* buffer, size_t size, const char* __restrict format, va_list 
         }
 
         const char* format_begun_at = format++;
+        char temp[32]; // Buffer for number conversions
 
         if (*format == 'c') {
             format++;
@@ -51,48 +51,60 @@ int vsnprintf(char* buffer, size_t size, const char* __restrict format, va_list 
         } else if (*format == 'i' || *format == 'd') {
             format++;
             int d = va_arg(parameters, int);
-            if (d == 0) {
-                if (written < size - 1)
-                    buffer[written++] = '0';
-            } else {
-                char temp[32];
-                int index = 0;
-                int neg = (d < 0);
-                if (neg) d = -d;
-        
-                while (d) {
-                    temp[index++] = (d % 10) + '0';
-                    d /= 10;
-                }
-                if (neg && written < size - 1)
-                    buffer[written++] = '-';
-                // Copy in correct order
-                while (index > 0 && written < size - 1)
-                    buffer[written++] = temp[--index];
+            itoa(d, temp, 10); // Convert integer to string
+            size_t len = strlen(temp);
+
+            if (written + len >= size) {
+                len = size - written - 1;
             }
+
+            memcpy(&buffer[written], temp, len);
+            written += len;
         } else if (*format == 'x' || *format == 'X') {
-            char temp[32];  // Enough for 32-bit integer
-            int index = 0;
-            unsigned int hex = va_arg(parameters, unsigned int);
-        
-            if (hex == 0) {
-                if (written < size - 1)
-                    buffer[written++] = '0';
-            } else {
-                while (hex) {
-                    int temp_val = hex % 16;
-                    temp[index++] = (temp_val < 10) ? 
-                                    (temp_val + '0') : 
-                                    (temp_val - 10 + ((*format == 'x') ? 'a' : 'A'));
-                    hex /= 16;
-                }
-               
-                // Copy in correct order
-                while (index > 0 && written < size - 1)
-                    buffer[written++] = temp[--index];
-            }
+            char specifier = *format; // Store 'x' or 'X'
             format++;
-        }
+            unsigned int hex = va_arg(parameters, unsigned int); // Use unsigned
+            itoa(hex, temp, 16); // Convert to hex string
+
+            if (specifier == 'X') { // Convert to uppercase if needed
+                for (size_t i = 0; temp[i] != '\0'; i++)
+                    if (temp[i] >= 'a' && temp[i] <= 'f')
+                        temp[i] -= 32;
+            }
+
+            size_t len = strlen(temp);
+            if (written + len >= size) {
+                len = size - written - 1;
+            }
+
+            memcpy(&buffer[written], temp, len);
+            written += len;
+        } else if (*format == '0') {    // assume hex
+            format++;
+            int digits = *(format) - '0';
+            format += 2;
+            unsigned int hex = va_arg(parameters, unsigned int);
+            itoa(hex, temp, 16);
+            if (strlen(temp) < digits && digits < 9) {
+                char t1 = temp[0];
+                char t2 = temp[1];
+                int len = digits - strlen(temp);
+                for (int i = 0; i < len; i++) {
+                    temp[i] = '0';
+                    temp[i+1] = t1;
+                    t1 = t2;
+                    t2 = temp[i+2];
+                    digits--;
+                }
+            }
+            size_t len = strlen(temp);
+            if (written + len >= size) {
+                len = size - written - 1;
+            }
+
+            memcpy(&buffer[written], temp, len);
+            written += len;
+        } 
         else {
             format = format_begun_at;
             size_t len = strlen(format);
