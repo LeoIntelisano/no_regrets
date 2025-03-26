@@ -60,6 +60,8 @@ LEOS/build
 *.DS_Store
 *.img
 
+#CLANG for LSP
+*.clangd
 
 # LOG
 *.log
