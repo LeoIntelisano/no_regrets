@@ -62,6 +62,6 @@ LEOS/build
 
 #CLANG for LSP
 *.clangd
-
+*.asm-lsp.toml
 # LOG
 *.log
