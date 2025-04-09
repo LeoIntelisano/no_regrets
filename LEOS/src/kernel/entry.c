@@ -11,7 +11,6 @@
 
 K_TERMINAL* term;
 
-
 void _cstart() {
 	term = &tty_term;
 	term->init();
@@ -20,7 +19,7 @@ void _cstart() {
 	k_info(term, "Welcome TO %s\n", l);
 //	k_panic(term, "I am panicking\n");
 //	k_warn(term, "You should really stop panicking\n");
-
+	
 	bios_mem_map mem_map[32];
 	int ret = get_memory_map(mem_map, sizeof(bios_mem_map)*32);
 	if (ret) {

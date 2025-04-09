@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+//TODO
+
 static void k_print(K_TERMINAL* term, const char* format, va_list args) {
     char buffer[MAX_PRINT_STREAM];
     vsnprintf(buffer, sizeof(buffer), format, args);
