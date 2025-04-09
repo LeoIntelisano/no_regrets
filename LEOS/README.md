@@ -9,7 +9,7 @@ makefile in root\
 - Paging enabled
 - VGA tty output
 ## Issues
-Shhhh
+No libc
 ## OS Structure
 ```
 /
