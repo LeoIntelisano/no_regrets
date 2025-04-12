@@ -10,7 +10,6 @@ PT_FLAGS equ 0x3; page table flags [Super(0) | R/W | PRES]
 PG_FLAGS equ 0x3 ; page flags
 PD_ADDR equ 0x1000; page directory addy (from 0x1000 - 0x4000)
 PHYS_ADDR equ 0x100000; page first phys address (where our kernel is loaded at 1MB)
-IDT_HANDLERS_BASE
 
 section .bss ; pretty sure nasm auto aligns 4-bytes (https://www.nasm.us/xdoc/2.11.08/html/nasmdoc7.html#section-7.9.2)
 alignb 16 ; 16 byte align (pad with 0s not nops) for systemV abi (stack should be alligned)
@@ -22,7 +21,7 @@ stack_top:
 section .text.entry
 
 global start
-global _#pg
+global _pg
 
 start:
 	mov ebp, stack_top ; stack grows down
@@ -123,17 +122,14 @@ start:
  	mov cr0, eax
 	mov eax, 0xC0DE
 
-; TODO set up IDT
-	lidt [idt_descriptor]
 
-.pf_hdlr:
 .crt:
 	call _init
 	call _cstart
 	call _fini ; kind of unnecessary tbh
 	jmp $
 
-_#pg:
+_pg:
 	pushad
 	mov eax, [esp + 32]	; regs are 4 bytes, PUSHAD: Push EAX, ECX, EDX, EBX, original ESP, EBP, ESI, and EDI
 	push eax
@@ -141,21 +137,3 @@ _#pg:
 	add esp, 4				; pop error code
 	popad
 	iret
-
-section .bss
-idt_descriptor:
-	dw idt_end - idt_start - 1  ; limit
-	dd idt_start				; base address
-	alignb 4
-idt_start:
-    times(28) dd 0 ; 8 bytes per entry, pad with zeros to get to 14th idx for #pf
-.idt_pf:
-    dw _#pg & 0xFFFF ; OFFSET 0-15
-    dw 8h ; segment selector (0 is null, 8 is code, 16 is data)
-    db 0
-    db EFh ; P[7], DPL 3 for CPL of usermode [6:5], 0D111 [4:0] D=1 for 32-bit
-    dw (_#pg >> 16) & 0xFFFF ; OFFSET 16-31
-.idt_fill:    
-    times(2*(256 - 15)) dd 0 ; 256 entries, 15 entries in, 8 bytes per entry
-idt_end:
-
