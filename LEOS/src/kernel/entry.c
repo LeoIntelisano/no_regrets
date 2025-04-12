@@ -6,8 +6,7 @@
 #include <kernel/term.h>
 #include <kernel/logging.h>
 #include <kernel/interrupt.h>
-
-#include <io/io.h>
+#include <kernel/io.h>
 #include <drivers/vga.h>
 
 extern void _pg();
@@ -26,8 +25,8 @@ void _cstart() {
 //	k_warn(term, "You should really stop panicking\n");
 
 	k_info(term, "Enabling interrupts...\n");
-	set_idt_entry(PF_VEC, &_pg, 0x8, (uint8_t)0xef);
-	load_idt();
+	idt_init();
+
 	k_info(term, "Enabled interrupts\n");
 //	__asm__ volatile ("sti");
 
@@ -41,15 +40,4 @@ void _cstart() {
 	if (ret) {
 		print_mem_map(term, mem_map, ret);
 	}
-
-
-	
-/*
-	tty_clear();
-//	uint32_t* temp = 0x300000;
-//	*temp = "MEMORY VIOLATION";
-	
-	
-	ret ? tty_print("Memory Map copy succeeded!\n") : tty_print("Memory map copy failed\n");
-	*/
 }
