@@ -1,5 +1,5 @@
 #include "drivers/vga.h"
-#include "io/io.h"
+#include "kernel/io.h"
 
 // VGA IO port
 #define VGA_ADDR 0x3D4

@@ -1,8 +1,8 @@
 // src/arch/i386/tty.c -- tty implementation for x86
 #include <stdint.h>
 #include <stddef.h>
-#include "kernel/tty.h"
-#include "drivers/vga.h"
+#include <kernel/tty.h>
+#include <drivers/vga.h>
 
 #define index(x,y)((x+VGA_WIDTH*y)*2)
 #define VGA_WIDTH 80
@@ -77,7 +77,7 @@ int tty_putc(int ch) {
 		tty_scroll();
 	}
 
-	if (vga_mem[index((tty_col)%VGA_WIDTH, tty_row)] = (uint8_t)' ')
+	if (vga_mem[index((tty_col)%VGA_WIDTH, tty_row)] == (uint8_t)' ')
 		vga_mem[index((tty_col)%VGA_WIDTH, tty_row) + 1] = *(uint8_t*)&vga;
 
 	tty_set_cursor(tty_col % VGA_WIDTH, tty_row % VGA_HEIGHT);
@@ -119,7 +119,7 @@ void tty_clear() {
 
 void tty_set_attr(uint8_t attr) {
 	*(uint8_t*)&vga = attr;
-	if (vga_mem[index((tty_col)%VGA_WIDTH, tty_row)] = (uint8_t)' ')
+	if (vga_mem[index((tty_col)%VGA_WIDTH, tty_row)] == (uint8_t)' ')
 		vga_mem[index((tty_col)%VGA_WIDTH, tty_row) + 1] = *(uint8_t*)&vga;
 }
 void tty_set_color(uint8_t fg, uint8_t bg) {

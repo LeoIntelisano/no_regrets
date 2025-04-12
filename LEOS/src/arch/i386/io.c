@@ -1,4 +1,4 @@
-#include "io/io.h"
+#include "kernel/io.h"
 
 /*write 1 byte, 1 word */
 void outb(uint16_t loc, uint8_t src) {

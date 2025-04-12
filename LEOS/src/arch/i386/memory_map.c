@@ -1,10 +1,10 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <kernel/memory_map.h>
+#include <kernel/logging.h>
 
 // TODO find some way to abstract this interface
 
-#define MEM_MAP_ADDR 0x7e00
 
 // TODO swap to kernel memcpy
 int get_memory_map(bios_mem_map* mm, int size) {
